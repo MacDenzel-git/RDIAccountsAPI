@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace DataAccessLayer.Models;
+
+public partial class MemberAccountDTO
+{
+    public int AccountId { get; set; }
+
+    public string MemberAccountNumber { get; set; } = null!;
+
+    public string AccountName { get; set; } = null!;
+
+    public double Balance { get; set; }
+
+    public string CreatedBy { get; set; } = null!;
+
+    public DateTime CreatedDate { get; set; }
+
+    public bool IsActive { get; set; }
+}
