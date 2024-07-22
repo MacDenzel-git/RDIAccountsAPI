@@ -1,6 +1,7 @@
 ﻿
 
 using AllinOne.DataHandlers;
+using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 
 namespace BusinessLogicLayer.Services.InterestAccountsServiceContainer

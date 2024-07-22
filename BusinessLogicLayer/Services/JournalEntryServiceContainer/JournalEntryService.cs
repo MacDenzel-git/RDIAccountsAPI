@@ -1,40 +1,40 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
 using Blazored.SessionStorage;
-using BusinessLogicLayer.Services.MemberAccountsServiceContainer;
+using BusinessLogicLayer.Services.JournalEntrysServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
-namespace BusinessLogicLayer.ServiceContainer.MemberAccountServiceContainer
+namespace BusinessLogicLayer.ServiceContainer.JournalEntryServiceContainer
 {
-    public class MemberAccountService : IMemberAccountService
+    public class JournalEntryService : IJournalEntryService
     {
         private readonly ISessionStorageService _sessionStorage;
 
-        private readonly GenericRepository<MemberAccount> _service;
-        public MemberAccountService(GenericRepository<MemberAccount> service, ISessionStorageService sessionStorage)
+        private readonly GenericRepository<JournalEntry> _service;
+        public JournalEntryService(GenericRepository<JournalEntry> service, ISessionStorageService sessionStorage)
         {
             _sessionStorage = sessionStorage;
             _service = service;
         }
-        public async Task<OutputHandler> Create(MemberAccountDTO memberAccount)
+        public async Task<OutputHandler> Create(JournalEntryDTO journalEntry)
         {
             try
             {
                 //check if record with same name already exist to avoid duplicates
-                //bool isExist = await _service.AnyAsync(x => x.MemberAccountSpecifications == class.MemberAccountDescription);
+                //bool isExist = await _service.AnyAsync(x => x.JournalEntrySpecifications == class.JournalEntryDescription);
                 //if (isExist)
                 //{
                 //    return new OutputHandler
                 //    {
                 //        IsErrorOccured = true,
-                //        Message = StandardMessages.GetDuplicateMessage(class.MemberAccountDescription)
+                //        Message = StandardMessages.GetDuplicateMessage(class.JournalEntryDescription)
 
                 //    };
                 //}
 
-                var mapped = new AutoMapper<MemberAccountDTO, MemberAccount>().MapToObject(memberAccount);
+                var mapped = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(journalEntry);
                 //mapped.CreatedDate = DateTime.Now;
                 //mapped.CreatedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
                 var result = await _service.Create(mapped);
@@ -48,12 +48,12 @@ namespace BusinessLogicLayer.ServiceContainer.MemberAccountServiceContainer
         }
 
         //Code for deleting record
-        public async Task<OutputHandler> Delete(int memberAccountId)
+        public async Task<OutputHandler> Delete(int journalEntryId)
         {
 
             try
             {
-                await _service.Delete(x => x.AccountId == memberAccountId);
+                await _service.Delete(x => x.JournalEntryTransId == journalEntryId);
                 return new OutputHandler
                 {
                     IsErrorOccured = false,
@@ -66,34 +66,34 @@ namespace BusinessLogicLayer.ServiceContainer.MemberAccountServiceContainer
             }
         }
 
-        public async Task<MemberAccountDTO> GetMemberAccount(int memberAccountId)
+        public async Task<JournalEntryDTO> GetJournalEntry(int journalEntryId)
         {
-            var output = await _service.GetSingleItem(x => x.AccountId == memberAccountId);
-            return new AutoMapper<MemberAccount, MemberAccountDTO>().MapToObject(output);
+            var output = await _service.GetSingleItem(x => x.JournalEntryTransId == journalEntryId);
+            return new AutoMapper<JournalEntry, JournalEntryDTO>().MapToObject(output);
         }
 
-        public async Task<IEnumerable<MemberAccountDTO>> GetAllMemberAccounts()
+        public async Task<IEnumerable<JournalEntryDTO>> GetAllJournalEntrys()
         {
             var output = await _service.GetAll();
-            return new AutoMapper<MemberAccount, MemberAccountDTO>().MapToList(output);
+            return new AutoMapper<JournalEntry, JournalEntryDTO>().MapToList(output);
         }
 
-        public async Task<OutputHandler> Update(MemberAccountDTO memberAccount)
+        public async Task<OutputHandler> Update(JournalEntryDTO journalEntry)
         {
             try
             {
                 //  check record already exist to avoid duplicates
-                bool isExist = await _service.AnyAsync(x => x.AccountId == memberAccount.AccountId);
-                if (isExist)
-                {
-                    return new OutputHandler
-                    {
-                        IsErrorOccured = true,
-                        Message = StandardMessages.GetDuplicateMessage(memberAccount.MemberAccountNumber)
+                //bool isExist = await _service.AnyAsync(x => x.JournalEntryDescription == journalEntry.JournalEntryDescription);
+                //if (isExist)
+                //{
+                //    return new OutputHandler
+                //    {
+                //        IsErrorOccured = true,
+                //        Message = StandardMessages.GetDuplicateMessage(journalEntry.JournalEntryDescription)
 
-                    };
-                }
-                var mapped = new AutoMapper<MemberAccountDTO, MemberAccount>().MapToObject(memberAccount);
+                //    };
+                //}
+                var mapped = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(journalEntry);
                 //mapped.ModifiedDate = DateTime.Now;
                 //mapped.ModifiedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
 

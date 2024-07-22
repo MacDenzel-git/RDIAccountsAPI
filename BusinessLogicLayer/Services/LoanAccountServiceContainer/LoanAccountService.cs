@@ -2,6 +2,7 @@
 using AllinOne.DataHandlers.ErrorHandler;
 using Blazored.SessionStorage;
 using BusinessLogicLayer.Services.LoanAccountsServiceContainer;
+using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 

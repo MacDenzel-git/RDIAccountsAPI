@@ -3,6 +3,7 @@ using AllinOne.DataHandlers.ErrorHandler;
 using Blazored.SessionStorage;
 using BusinessLogicLayer.Services.InterestAccountsServiceContainer;
 using BusinessLogicLayer.Services.LoanConfigurationServiceContainer;
+using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 

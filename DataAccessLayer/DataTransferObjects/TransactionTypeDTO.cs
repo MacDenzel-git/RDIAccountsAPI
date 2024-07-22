@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DataAccessLayer.Models;
+namespace DataAccessLayer.DataTransferObjects;
 
 public partial class TransactionTypeDTO
 {
