@@ -1,7 +1,6 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
-using Blazored.SessionStorage;
-using DataAccessLayer.DataTransferObjects;
+ using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
@@ -9,13 +8,11 @@ namespace BusinessLogicLayer.Services.LoanConfigurationServiceContainer
 {
     public class LoanConfigurationService : ILoanConfigurationService
     {
-        private readonly ISessionStorageService _sessionStorage;
-
+ 
         private readonly GenericRepository<LoanConfiguration> _service;
-        public LoanConfigurationService(GenericRepository<LoanConfiguration> service, ISessionStorageService sessionStorage)
+        public LoanConfigurationService(GenericRepository<LoanConfiguration> service)
         {
-            _sessionStorage = sessionStorage;
-            _service = service;
+             _service = service;
         }
         public async Task<OutputHandler> Create(LoanConfigurationDTO loanConfiguration)
         {

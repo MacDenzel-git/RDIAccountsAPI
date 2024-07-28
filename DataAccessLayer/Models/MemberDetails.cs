@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace DataAccessLayer.Models;
 
-public partial class MemberAccount
+public partial class MemberDetails
 {
-    public int AccountId { get; set; }
+    public int MemberId { get; set; }
 
-    public string MemberAccountNumber { get; set; } = null!;
+    public string? MemberName { get; set; }
 
-    public string AccountName { get; set; } = null!;
+    public string PhoneNumber { get; set; } = null!;
 
-    public double Balance { get; set; }
+    public double Occupation { get; set; }
 
     public string CreatedBy { get; set; } = null!;
 

@@ -1,22 +1,19 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
-using Blazored.SessionStorage;
-using BusinessLogicLayer.Services.LoanAccountsServiceContainer;
+ using BusinessLogicLayer.Services.LoanAccountsServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
-namespace BusinessLogicLayer.ServiceContainer.LoanAccountServiceContainer
+namespace BusinessLogicLayer.Services.LoanAccountServiceContainer
 {
     public class LoanAccountService : ILoanAccountService
     {
-        private readonly ISessionStorageService _sessionStorage;
-
+ 
         private readonly GenericRepository<LoanAccount> _service;
-        public LoanAccountService(GenericRepository<LoanAccount> service, ISessionStorageService sessionStorage)
+        public LoanAccountService(GenericRepository<LoanAccount> service)
         {
-            _sessionStorage = sessionStorage;
-            _service = service;
+             _service = service;
         }
         public async Task<OutputHandler> Create(LoanAccountDTO loanAccount)
         {

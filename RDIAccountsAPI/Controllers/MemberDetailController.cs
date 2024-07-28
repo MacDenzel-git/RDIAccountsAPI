@@ -1,5 +1,6 @@
 ﻿
- using BusinessLogicLayer.JournalEntrysServiceContainer;
+using BusinessLogicLayer.Services.MemberDetailServiceContainer;
+using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
  using Microsoft.AspNetCore.Http;
@@ -10,10 +11,10 @@ namespace RDIAccountsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class JournalEntryController : ControllerBase
+    public class MemberDetailController : ControllerBase
     {
-        private readonly IJournalEntryService _service;
-        public JournalEntryController(IJournalEntryService service)
+        private readonly IMemberDetailService _service;
+        public MemberDetailController(IMemberDetailService service)
         {
             _service = service;
         }
@@ -21,12 +22,12 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API for creating client Type
         /// </summary>
-        /// <param name="JournalEntry"></param>
+        /// <param name="MemberDetail"></param>
         /// <returns></returns>
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(JournalEntryDTO journalEntry)
+        public async Task<IActionResult> Create(MemberDetailDTO memberDetail)
         {
-            var outputHandler = await _service.Create(journalEntry);
+            var outputHandler = await _service.Create(memberDetail);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -37,13 +38,13 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API for updating client Type
         /// </summary>
-        /// <param name="JournalEntry"></param>
+        /// <param name="MemberDetail"></param>
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(JournalEntryDTO journalEntry)
+        public async Task<IActionResult> Update(MemberDetailDTO memberDetail)
         {
-            var outputHandler = await _service.Update(journalEntry);
+            var outputHandler = await _service.Update(memberDetail);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -57,10 +58,10 @@ namespace RDIAccountsAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetAllJournalEntrys")]
-        public async Task<IActionResult> GetAllJournalEntrys()
+        [HttpGet("GetAllMemberDetails")]
+        public async Task<IActionResult> GetAllMemberDetails()
         {
-            var output = await _service.GetAllJournalEntrys();
+            var output = await _service.GetAllMemberDetails();
             if (output != null)
             {
                 return Ok(output);
@@ -71,13 +72,13 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API that deletes a client Type
         /// </summary>
-        /// <param name="JournalEntryId"></param>
+        /// <param name="MemberDetailId"></param>
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int JournalEntryId)
+        public async Task<IActionResult> Delete(int MemberDetailId)
         {
-            var output = await _service.Delete(JournalEntryId);
+            var output = await _service.Delete(MemberDetailId);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);
@@ -94,10 +95,10 @@ namespace RDIAccountsAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetJournalEntry")]
-        public async Task<IActionResult> GetJournalEntry(int JournalEntryId)
+        [HttpGet("GetMemberDetail")]
+        public async Task<IActionResult> GetMemberDetail(int MemberDetailId)
         {
-            var output = await _service.GetJournalEntry(JournalEntryId);
+            var output = await _service.GetMemberDetail(MemberDetailId);
             if (output != null)
             {
                 return Ok(output);

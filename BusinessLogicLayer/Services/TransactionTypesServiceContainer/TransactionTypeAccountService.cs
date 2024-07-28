@@ -1,22 +1,19 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
-using Blazored.SessionStorage;
-using BusinessLogicLayer.Services.TransactionTypesServiceContainer;
+ using BusinessLogicLayer.Services.TransactionTypesServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
-namespace BusinessLogicLayer.ServiceContainer.TransactionTypeServiceContainer
+namespace BusinessLogicLayer.Services.TransactionTypeServiceContainer
 {
     public class TransactionTypeService : ITransactionTypeService
     {
-        private readonly ISessionStorageService _sessionStorage;
-
+ 
         private readonly GenericRepository<TransactionType> _service;
-        public TransactionTypeService(GenericRepository<TransactionType> service, ISessionStorageService sessionStorage)
+        public TransactionTypeService(GenericRepository<TransactionType> service)
         {
-            _sessionStorage = sessionStorage;
-            _service = service;
+             _service = service;
         }
         public async Task<OutputHandler> Create(TransactionTypeDTO transactionType)
         {

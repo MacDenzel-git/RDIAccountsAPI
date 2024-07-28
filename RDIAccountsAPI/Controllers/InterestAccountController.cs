@@ -1,6 +1,6 @@
 ﻿
- using BusinessLogicLayer.Services.InterestAccountsServiceContainer;
-using DataAccessLayer.DataTransferObjects;
+using BusinessLogicLayer.InterestAccountsServiceContainer;
+ using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
  using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

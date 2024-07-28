@@ -1,40 +1,51 @@
 ﻿
-using BusinessLogicLayer.ServiceContainer.InterestAccountServiceContainer;
-using BusinessLogicLayer.ServiceContainer.LoanAccountServiceContainer;
-using BusinessLogicLayer.ServiceContainer.MemberAccountServiceContainer;
- using BusinessLogicLayer.ServiceContainer.TransactionTypeServiceContainer;
- using BusinessLogicLayer.Services.InterestAccountsServiceContainer;
+
+
+using BusinessLogicLayer.GroupDetailsServiceContainer;
+using BusinessLogicLayer.InterestAccountsServiceContainer;
+using BusinessLogicLayer.JournalEntrysServiceContainer;
+using BusinessLogicLayer.Services.GroupDetailServiceContainer;
+using BusinessLogicLayer.Services.InterestAccountServiceContainer;
+using BusinessLogicLayer.Services.JournalEntryServiceContainer;
+using BusinessLogicLayer.Services.LoanAccountServiceContainer;
 using BusinessLogicLayer.Services.LoanAccountsServiceContainer;
 using BusinessLogicLayer.Services.LoanConfigurationServiceContainer;
-using BusinessLogicLayer.Services.MemberAccountsServiceContainer;
+using BusinessLogicLayer.Services.MainAccountServiceContainer;
+using BusinessLogicLayer.Services.MainAccountsServiceContainer;
+using BusinessLogicLayer.Services.MemberDetailServiceContainer;
+using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
+using BusinessLogicLayer.Services.TransactionTypeServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypesServiceContainer;
 using DataAccessLayer.Models;
- using RDIAccountsAPI;
+using RDIAccountsAPI;
 
-namespace HospitalityManagementSystemWebApp
+namespace RDIAccountsAPI
 {
-    public static class DependecyInjectionRegistration
-    {
-        public static IServiceCollection AddRepositories(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddScoped<GenericRepository<InterestAccount>>();
-            serviceCollection.AddScoped<GenericRepository<JournalEntry>>();
-            serviceCollection.AddScoped<GenericRepository<LoanAccount>>();
-            serviceCollection.AddScoped<GenericRepository<LoanConfiguration>>();
-            serviceCollection.AddScoped<GenericRepository<MainAccount>>();
-            serviceCollection.AddScoped<GenericRepository<MemberAccount>>();
+	public static class DependecyInjectionRegistration
+	{
+		public static IServiceCollection AddRepositories(this IServiceCollection serviceCollection)
+		{
+			serviceCollection.AddScoped<GenericRepository<InterestAccount>>();
+			serviceCollection.AddScoped<GenericRepository<GroupDetail>>();
+			serviceCollection.AddScoped<GenericRepository<JournalEntry>>();
+			serviceCollection.AddScoped<GenericRepository<LoanAccount>>();
+			serviceCollection.AddScoped<GenericRepository<LoanConfiguration>>();
+			serviceCollection.AddScoped<GenericRepository<MainAccount>>();
+			serviceCollection.AddScoped<GenericRepository<MemberDetails>>();
 			return serviceCollection.AddScoped<GenericRepository<TransactionType>>();
 
 		}
 
 		public static IServiceCollection AddServices(this IServiceCollection service)
-        {
-            service.AddScoped<ILoanAccountService, LoanAccountService>();
-            service.AddScoped<IMemberAccountService, MemberAccountService>();
-            service.AddScoped<ITransactionTypeService, TransactionTypeService>();
-            service.AddScoped<ILoanConfigurationService, LoanConfigurationService>();
-            service.AddScoped<ILoanAccountService, LoanAccountService>();
-            return service.AddScoped<IInterestAccountService, InterestAccountService>();
-        }
-    }
+		{
+			service.AddScoped<IGroupDetailService, GroupDetailService>();
+			service.AddScoped<ILoanAccountService, LoanAccountService>();
+			service.AddScoped<IMainAccountService, MainAccountService>();
+			service.AddScoped<IJournalEntryService, JournalEntryService>();
+			service.AddScoped<IMemberDetailService, MemberDetailService>();
+			service.AddScoped<ITransactionTypeService, TransactionTypeService>();
+			service.AddScoped<ILoanConfigurationService, LoanConfigurationService>();
+			return service.AddScoped<IInterestAccountService, InterestAccountService>();
+		}
+	}
 }

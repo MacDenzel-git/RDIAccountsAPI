@@ -15,6 +15,8 @@ public partial class EasyAccountDbContext : DbContext
     {
     }
 
+    public virtual DbSet<GroupDetail> GroupDetails { get; set; }
+
     public virtual DbSet<InterestAccount> InterestAccounts { get; set; }
 
     public virtual DbSet<JournalEntry> JournalEntries { get; set; }
@@ -25,19 +27,27 @@ public partial class EasyAccountDbContext : DbContext
 
     public virtual DbSet<MainAccount> MainAccounts { get; set; }
 
-    public virtual DbSet<MemberAccount> MemberAccounts { get; set; }
+    public virtual DbSet<MemberDetail> MemberDetails { get; set; }
 
     public virtual DbSet<TransactionType> TransactionTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=EasyAccountDB;Trusted_Connection=True; TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=EasyAccountDB;TrustServerCertificate=True; Trusted_Connection=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<GroupDetail>(entity =>
+        {
+            entity.HasKey(e => e.GroupId);
+
+            entity.Property(e => e.GroupInitials).HasMaxLength(50);
+            entity.Property(e => e.GroupName).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<InterestAccount>(entity =>
         {
-            entity.ToTable("InterestAccount");
+            entity.HasKey(e => e.InterestAccountId).HasName("PK_InterestAccount");
 
             entity.Property(e => e.InterestTitle).HasMaxLength(50);
             entity.Property(e => e.LoanAccountId).HasMaxLength(50);
@@ -109,25 +119,30 @@ public partial class EasyAccountDbContext : DbContext
 
         modelBuilder.Entity<MainAccount>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(e => e.AccountId);
 
             entity.Property(e => e.AccountName).HasMaxLength(50);
+            entity.Property(e => e.AccountNumber).HasMaxLength(50);
+            entity.Property(e => e.AccountType).HasMaxLength(50);
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<MemberAccount>(entity =>
+        modelBuilder.Entity<MemberDetail>(entity =>
         {
-            entity.HasKey(e => e.AccountId);
+            entity.HasKey(e => e.MemberId).HasName("PK_MemberAccounts");
 
-            entity.Property(e => e.AccountName)
-                .HasMaxLength(10)
-                .IsFixedLength();
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-            entity.Property(e => e.MemberAccountNumber).HasMaxLength(100);
+            entity.Property(e => e.MemberName).HasMaxLength(100);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(50);
+
+            entity.HasOne(d => d.Group).WithMany(p => p.MemberDetails)
+                .HasForeignKey(d => d.GroupId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MemberDetails_GroupDetails");
         });
 
         modelBuilder.Entity<TransactionType>(entity =>

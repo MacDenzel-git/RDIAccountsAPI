@@ -1,6 +1,6 @@
 ﻿
- using BusinessLogicLayer.Services.MemberAccountsServiceContainer;
-using DataAccessLayer.DataTransferObjects;
+using BusinessLogicLayer.GroupDetailsServiceContainer;
+ using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
  using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +10,10 @@ namespace RDIAccountsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MemberAccountController : ControllerBase
+    public class GroupDetailController : ControllerBase
     {
-        private readonly IMemberAccountService _service;
-        public MemberAccountController(IMemberAccountService service)
+        private readonly IGroupDetailService _service;
+        public GroupDetailController(IGroupDetailService service)
         {
             _service = service;
         }
@@ -21,12 +21,12 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API for creating client Type
         /// </summary>
-        /// <param name="MemberAccount"></param>
+        /// <param name="GroupDetail"></param>
         /// <returns></returns>
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(MemberAccountDTO memberAccount)
+        public async Task<IActionResult> Create(GroupDetailDTO groupDetail)
         {
-            var outputHandler = await _service.Create(memberAccount);
+            var outputHandler = await _service.Create(groupDetail);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -37,13 +37,13 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API for updating client Type
         /// </summary>
-        /// <param name="MemberAccount"></param>
+        /// <param name="GroupDetail"></param>
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(MemberAccountDTO memberAccount)
+        public async Task<IActionResult> Update(GroupDetailDTO groupDetail)
         {
-            var outputHandler = await _service.Update(memberAccount);
+            var outputHandler = await _service.Update(groupDetail);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -57,10 +57,10 @@ namespace RDIAccountsAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetAllMemberAccounts")]
-        public async Task<IActionResult> GetAllMemberAccounts()
+        [HttpGet("GetAllGroupDetails")]
+        public async Task<IActionResult> GetAllGroupDetails()
         {
-            var output = await _service.GetAllMemberAccounts();
+            var output = await _service.GetAllGroupDetails();
             if (output != null)
             {
                 return Ok(output);
@@ -71,13 +71,13 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API that deletes a client Type
         /// </summary>
-        /// <param name="MemberAccountId"></param>
+        /// <param name="GroupDetailId"></param>
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int MemberAccountId)
+        public async Task<IActionResult> Delete(int GroupDetailId)
         {
-            var output = await _service.Delete(MemberAccountId);
+            var output = await _service.Delete(GroupDetailId);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);
@@ -94,10 +94,10 @@ namespace RDIAccountsAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetMemberAccount")]
-        public async Task<IActionResult> GetMemberAccount(int MemberAccountId)
+        [HttpGet("GetGroupDetail")]
+        public async Task<IActionResult> GetGroupDetail(int GroupDetailId)
         {
-            var output = await _service.GetMemberAccount(MemberAccountId);
+            var output = await _service.GetGroupDetail(GroupDetailId);
             if (output != null)
             {
                 return Ok(output);

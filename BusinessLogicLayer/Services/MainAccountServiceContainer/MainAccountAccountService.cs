@@ -1,22 +1,19 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
-using Blazored.SessionStorage;
-using BusinessLogicLayer.Services.MainAccountsServiceContainer;
+ using BusinessLogicLayer.Services.MainAccountsServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
-namespace BusinessLogicLayer.ServiceContainer.MainAccountServiceContainer
+namespace BusinessLogicLayer.Services.MainAccountServiceContainer
 {
     public class MainAccountService : IMainAccountService
     {
-        private readonly ISessionStorageService _sessionStorage;
-
+ 
         private readonly GenericRepository<MainAccount> _service;
-        public MainAccountService(GenericRepository<MainAccount> service, ISessionStorageService sessionStorage)
+        public MainAccountService(GenericRepository<MainAccount> service )
         {
-            _sessionStorage = sessionStorage;
-            _service = service;
+             _service = service;
         }
         public async Task<OutputHandler> Create(MainAccountDTO mainAccount)
         {
@@ -83,16 +80,16 @@ namespace BusinessLogicLayer.ServiceContainer.MainAccountServiceContainer
             try
             {
                 //  check record already exist to avoid duplicates
-                bool isExist = await _service.AnyAsync(x => x.AccountName == mainAccount.AccountName);
-                if (isExist)
-                {
-                    return new OutputHandler
-                    {
-                        IsErrorOccured = true,
-                        Message = StandardMessages.GetDuplicateMessage(mainAccount.AccountName)
+                // bool isExist = await _service.AnyAsync(x => x.AccountName == mainAccount.AccountName);
+                // if (isExist)
+                // {
+                //     return new OutputHandler
+                //     {
+                //         IsErrorOccured = true,
+                //         Message = StandardMessages.GetDuplicateMessage(mainAccount.AccountName)
 
-                    };
-                }
+                //     };
+                // }
                 var mapped = new AutoMapper<MainAccountDTO, MainAccount>().MapToObject(mainAccount);
                 //mapped.ModifiedDate = DateTime.Now;
                 //mapped.ModifiedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");

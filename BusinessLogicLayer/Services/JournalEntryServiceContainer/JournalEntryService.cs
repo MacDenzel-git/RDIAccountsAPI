@@ -1,22 +1,19 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
-using Blazored.SessionStorage;
-using BusinessLogicLayer.Services.JournalEntrysServiceContainer;
-using DataAccessLayer.DataTransferObjects;
+ using BusinessLogicLayer.JournalEntrysServiceContainer;
+ using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
-namespace BusinessLogicLayer.ServiceContainer.JournalEntryServiceContainer
+namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 {
     public class JournalEntryService : IJournalEntryService
     {
-        private readonly ISessionStorageService _sessionStorage;
-
+ 
         private readonly GenericRepository<JournalEntry> _service;
-        public JournalEntryService(GenericRepository<JournalEntry> service, ISessionStorageService sessionStorage)
+        public JournalEntryService(GenericRepository<JournalEntry> service)
         {
-            _sessionStorage = sessionStorage;
-            _service = service;
+             _service = service;
         }
         public async Task<OutputHandler> Create(JournalEntryDTO journalEntry)
         {
