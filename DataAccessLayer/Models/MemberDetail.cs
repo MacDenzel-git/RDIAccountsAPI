@@ -21,5 +21,7 @@ public partial class MemberDetail
 
     public int GroupId { get; set; }
 
+    public string Email { get; set; } = null!;
+
     public virtual GroupDetail Group { get; set; } = null!;
 }

@@ -5,22 +5,26 @@ using BusinessLogicLayer.Services.MainAccountsServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
+using Microsoft.Extensions.Logging;
 using RDIAccountsAPI;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 {
     public class MemberDetailService : IMemberDetailService
     {
 
-        private readonly GenericRepository<MemberDetails> _service;
+        private readonly GenericRepository<MemberDetail> _service;
         private readonly IMainAccountService _accountService;
         private readonly IGroupDetailService _groupService;
+        private ILogger<MemberDetailService> _logger;
 
-        public MemberDetailService(GenericRepository<MemberDetails> service, IMainAccountService accountService, IGroupDetailService groupService)
+        public MemberDetailService(GenericRepository<MemberDetail> service, IMainAccountService accountService, IGroupDetailService groupService, ILogger<MemberDetailService> logger)
         {
             _service = service;
             _accountService = accountService;
             _groupService = groupService;
+            _logger = logger;
         }
         public async Task<OutputHandler> Create(MemberDetailDTO memberDetail)
         {
@@ -37,23 +41,34 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                     };
                 }
+
+                _logger.LogInformation("Checked if Duplicate:No Duplicate");
                 //Get Account nnumber
                 //Compute Variables used to Create an account.
                 string accountNumber = "";
 
-                ///#######LOG ENTRY
+             
+                _logger.LogInformation("Started Member Creation");
+                _logger.LogInformation("Create Account Number");
+
                 var output = await GetAccountNumber(memberDetail, "member");
-                //########LOG EXIT 
+
+              
                 if (output.IsErrorOccured)
                 {
+                    _logger.LogInformation($"Exited Account Creation with an Error {output.Message}");
                     //if there's an error go back
                     return new OutputHandler { IsErrorOccured = true, Message = output.Message };
                 }
                 else
                 {
+                    _logger.LogInformation($"Exited Account Successfully {output.Message}");
+
                     accountNumber = output.Result.ToString();
                     if (accountNumber is null)
                     {
+                        _logger.LogInformation($"Exited Account Creation successfully but account Number is Empty returning Error");
+
                         return new OutputHandler
                         {
                             Message = "Failed to Compute Account Number, Result returned null",
@@ -64,6 +79,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                 }
                 //Create Account 
                 //LOG ENTRY CREATE ACCOUNT
+                _logger.LogInformation($"Creating an account for member");
 
 
                 //LOG EXIT 
@@ -76,10 +92,32 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                 };
 
-                var mapped = new AutoMapper<MemberDetailDTO, MemberDetails>().MapToObject(memberDetail);
+               // var mappedAccount = new AutoMapper<MainAccountDTO,MainAccount>().MapToObject(account);
+
+                _logger.LogInformation($"Attempting to Create an Account Record in Main Account Table");
+                var accountCreationOutput = await _accountService.Create(account);
+                if (accountCreationOutput.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Main Account Creation Failed with Error:{accountCreationOutput.Message}");
+
+                }
+                else
+                {
+                    //add email to Mailing List 
+                }
+
+
+
+                var mapped = new AutoMapper<MemberDetailDTO, MemberDetail>().MapToObject(memberDetail);
                 //mapped.CreatedDate = DateTime.Now;
                 //mapped.CreatedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
                 var result = await _service.Create(mapped);
+                if (result.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Exited Member Creation with Error {result.Message}");
+
+                    return result;
+                }
                 return result;
             }
             catch (Exception ex)
@@ -97,9 +135,13 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
             try
             {
                 string accountNumber = "";
+                _logger.LogInformation("Attempting to Get Group Details to Create Account Number");
+
                 var group = await _groupService.GetGroupDetail(memberDetail.GroupId);
                 if (type.ToLower() == "member")
                 {
+                    _logger.LogInformation("member account creation started");
+
                     string memberId = "";
                     if (memberDetail.MemberId < 10)
                     {
@@ -111,10 +153,14 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                     }
                     string initials = memberDetail.MemberName.GetInitials();
                     accountNumber = $"M0193{group.GroupInitials}G{memberDetail.GroupId}{memberId}{initials}";
+
+                    _logger.LogInformation($"Account Created {accountNumber}");
                     return new OutputHandler { IsErrorOccured = false, Message = "Success", Result = accountNumber };
                 }
                 else
                 {
+                    _logger.LogInformation("Group account creation started");
+
                     string groupId = "";
                     if (memberDetail.GroupId < 10)
                     {
@@ -127,13 +173,15 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
 
                     accountNumber = $"G01295{group.GroupInitials}{memberDetail.GroupId}";
+                    _logger.LogInformation($"Account Created {accountNumber}");
+
                     return new OutputHandler { IsErrorOccured = false, Message = "Success", Result = accountNumber };
 
                 }
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex.Message);
                 return StandardMessages.getExceptionMessage(ex);
             }
             //M093NTH01DM
@@ -161,13 +209,13 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
         public async Task<MemberDetailDTO> GetMemberDetail(int memberDetailId)
         {
             var output = await _service.GetSingleItem(x => x.MemberId == memberDetailId);
-            return new AutoMapper<MemberDetails, MemberDetailDTO>().MapToObject(output);
+            return new AutoMapper<MemberDetail, MemberDetailDTO>().MapToObject(output);
         }
 
         public async Task<IEnumerable<MemberDetailDTO>> GetAllMemberDetails()
         {
             var output = await _service.GetAll();
-            return new AutoMapper<MemberDetails, MemberDetailDTO>().MapToList(output);
+            return new AutoMapper<MemberDetail, MemberDetailDTO>().MapToList(output);
         }
 
         public async Task<OutputHandler> Update(MemberDetailDTO memberDetail)
@@ -185,7 +233,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                     };
                 }
-                var mapped = new AutoMapper<MemberDetailDTO, MemberDetails>().MapToObject(memberDetail);
+                var mapped = new AutoMapper<MemberDetailDTO, MemberDetail>().MapToObject(memberDetail);
                 //mapped.ModifiedDate = DateTime.Now;
                 //mapped.ModifiedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
 

@@ -4,6 +4,7 @@
 using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.InterestAccountsServiceContainer;
 using BusinessLogicLayer.JournalEntrysServiceContainer;
+using BusinessLogicLayer.Logging;
 using BusinessLogicLayer.Services.GroupDetailServiceContainer;
 using BusinessLogicLayer.Services.InterestAccountServiceContainer;
 using BusinessLogicLayer.Services.JournalEntryServiceContainer;
@@ -31,7 +32,7 @@ namespace RDIAccountsAPI
 			serviceCollection.AddScoped<GenericRepository<LoanAccount>>();
 			serviceCollection.AddScoped<GenericRepository<LoanConfiguration>>();
 			serviceCollection.AddScoped<GenericRepository<MainAccount>>();
-			serviceCollection.AddScoped<GenericRepository<MemberDetails>>();
+			serviceCollection.AddScoped<GenericRepository<MemberDetail>>();
 			return serviceCollection.AddScoped<GenericRepository<TransactionType>>();
 
 		}
@@ -44,8 +45,11 @@ namespace RDIAccountsAPI
 			service.AddScoped<IJournalEntryService, JournalEntryService>();
 			service.AddScoped<IMemberDetailService, MemberDetailService>();
 			service.AddScoped<ITransactionTypeService, TransactionTypeService>();
+			//service.AddScoped<ILogger, RoundTheCodeFileLogger>();
+			//service.AddScoped<ILoggerProvider, RoundTheCodeFileLoggerProvider>();
 			service.AddScoped<ILoanConfigurationService, LoanConfigurationService>();
 			return service.AddScoped<IInterestAccountService, InterestAccountService>();
 		}
+
 	}
 }

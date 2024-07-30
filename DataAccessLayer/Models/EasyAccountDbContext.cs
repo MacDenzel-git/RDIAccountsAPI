@@ -25,6 +25,8 @@ public partial class EasyAccountDbContext : DbContext
 
     public virtual DbSet<LoanConfiguration> LoanConfigurations { get; set; }
 
+    public virtual DbSet<MailingList> MailingLists { get; set; }
+
     public virtual DbSet<MainAccount> MainAccounts { get; set; }
 
     public virtual DbSet<MemberDetail> MemberDetails { get; set; }
@@ -117,6 +119,14 @@ public partial class EasyAccountDbContext : DbContext
             entity.Property(e => e.RepaymentPeriod).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<MailingList>(entity =>
+        {
+            entity.ToTable("MailingList");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Email).HasMaxLength(400);
+        });
+
         modelBuilder.Entity<MainAccount>(entity =>
         {
             entity.HasKey(e => e.AccountId);
@@ -136,6 +146,7 @@ public partial class EasyAccountDbContext : DbContext
 
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(400);
             entity.Property(e => e.MemberName).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
 
