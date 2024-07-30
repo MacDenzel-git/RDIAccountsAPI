@@ -19,4 +19,5 @@ public partial class MemberDetailDTO
     public DateTime CreatedDate { get; set; }
 
     public bool IsActive { get; set; }
+    public string Email { get; set; }
 }

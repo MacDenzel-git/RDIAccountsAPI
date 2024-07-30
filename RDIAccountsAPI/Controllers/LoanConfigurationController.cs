@@ -1,8 +1,9 @@
 ﻿
 using BusinessLogicLayer.Services.LoanConfigurationServiceContainer;
- using DataAccessLayer.DataTransferObjects;
+using BusinessLogicLayer.Services.MailingListServiceContainer;
+using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
- using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 

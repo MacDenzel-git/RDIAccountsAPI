@@ -11,18 +11,21 @@ using BusinessLogicLayer.Services.JournalEntryServiceContainer;
 using BusinessLogicLayer.Services.LoanAccountServiceContainer;
 using BusinessLogicLayer.Services.LoanAccountsServiceContainer;
 using BusinessLogicLayer.Services.LoanConfigurationServiceContainer;
+using BusinessLogicLayer.Services.MailingListServiceContainer;
 using BusinessLogicLayer.Services.MainAccountServiceContainer;
 using BusinessLogicLayer.Services.MainAccountsServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypeServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypesServiceContainer;
+using BusinessLogicLayer.UnitOfWorkContainer;
+using BusinessLogicLayer.UnitOfWorkContainer.ContosoUniversity.DAL;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
 namespace RDIAccountsAPI
 {
-	public static class DependecyInjectionRegistration
+    public static class DependecyInjectionRegistration
 	{
 		public static IServiceCollection AddRepositories(this IServiceCollection serviceCollection)
 		{
@@ -32,6 +35,7 @@ namespace RDIAccountsAPI
 			serviceCollection.AddScoped<GenericRepository<LoanAccount>>();
 			serviceCollection.AddScoped<GenericRepository<LoanConfiguration>>();
 			serviceCollection.AddScoped<GenericRepository<MainAccount>>();
+			serviceCollection.AddScoped<GenericRepository<MailingList>>();
 			serviceCollection.AddScoped<GenericRepository<MemberDetail>>();
 			return serviceCollection.AddScoped<GenericRepository<TransactionType>>();
 
@@ -45,9 +49,11 @@ namespace RDIAccountsAPI
 			service.AddScoped<IJournalEntryService, JournalEntryService>();
 			service.AddScoped<IMemberDetailService, MemberDetailService>();
 			service.AddScoped<ITransactionTypeService, TransactionTypeService>();
+			service.AddScoped<IMailingListService, MailingListService>();
 			//service.AddScoped<ILogger, RoundTheCodeFileLogger>();
 			//service.AddScoped<ILoggerProvider, RoundTheCodeFileLoggerProvider>();
 			service.AddScoped<ILoanConfigurationService, LoanConfigurationService>();
+			service.AddScoped<IUnitOfWork, UnitOfWork>();
 			return service.AddScoped<IInterestAccountService, InterestAccountService>();
 		}
 
