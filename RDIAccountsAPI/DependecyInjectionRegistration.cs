@@ -19,7 +19,6 @@ using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypeServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypesServiceContainer;
 using BusinessLogicLayer.UnitOfWorkContainer;
-using BusinessLogicLayer.UnitOfWorkContainer.ContosoUniversity.DAL;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 
@@ -53,7 +52,7 @@ namespace RDIAccountsAPI
 			//service.AddScoped<ILogger, RoundTheCodeFileLogger>();
 			//service.AddScoped<ILoggerProvider, RoundTheCodeFileLoggerProvider>();
 			service.AddScoped<ILoanConfigurationService, LoanConfigurationService>();
-			service.AddScoped<IUnitOfWork, UnitOfWork>();
+			//service.AddScoped<IUnitOfWork, UnitOfWork>();
 			return service.AddScoped<IInterestAccountService, InterestAccountService>();
 		}
 

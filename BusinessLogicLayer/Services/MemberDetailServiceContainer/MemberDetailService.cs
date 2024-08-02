@@ -5,8 +5,7 @@ using BusinessLogicLayer.Services.MailingListServiceContainer;
 using BusinessLogicLayer.Services.MainAccountsServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
 using BusinessLogicLayer.UnitOfWorkContainer;
-using BusinessLogicLayer.UnitOfWorkContainer.ContosoUniversity.DAL;
-using DataAccessLayer.DataTransferObjects;
+ using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
@@ -23,21 +22,18 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
     public class MemberDetailService : IMemberDetailService
     {
         private readonly IMailingListService _mailingListService;
-        private readonly GenericRepository<MemberDetail> _memberDetailService;
-        private readonly IMainAccountService _mainAccountService;
+         private readonly IMainAccountService _mainAccountService;
         private readonly IGroupDetailService _groupService;
         private readonly EasyAccountDbContext _context;
         private ILogger<MemberDetailService> _logger;
         private readonly IUnitOfWork _unitOfWork;
 
-        public MemberDetailService(GenericRepository<MemberDetail> service, IMainAccountService accountService, IGroupDetailService groupService, ILogger<MemberDetailService> logger, IMailingListService mailingListService, EasyAccountDbContext context, IUnitOfWork unitOfWork)
+        public MemberDetailService( 
+            IGroupDetailService groupService, ILogger<MemberDetailService> logger, EasyAccountDbContext context, IUnitOfWork unitOfWork)
         {
-            _memberDetailService = service;
-            _mainAccountService = accountService;
-            _groupService = groupService;
+              _groupService = groupService;
             _logger = logger;
-            _mailingListService = mailingListService;
-            _context = context;
+             _context = context;
             _unitOfWork = unitOfWork;
         }
         public async Task<OutputHandler> Create(MemberDetailDTO memberDetail)
@@ -47,16 +43,16 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
             try
             {
                 //check if record with same name already exist to avoid duplicates  - check phone number
-                bool isExist = await _memberDetailService.AnyAsync(x => x.PhoneNumber == memberDetail.PhoneNumber);
-                if (isExist)
-                {
-                    return new OutputHandler
-                    {
-                        IsErrorOccured = true,
-                        Message = StandardMessages.GetDuplicateMessage(memberDetail.PhoneNumber)
+                //bool isExist = await _memberDetailService.AnyAsync(x => x.PhoneNumber == memberDetail.PhoneNumber);
+                //if (isExist)
+                //{
+                //    return new OutputHandler
+                //    {
+                //        IsErrorOccured = true,
+                //        Message = StandardMessages.GetDuplicateMessage(memberDetail.PhoneNumber)
 
-                    };
-                }
+                //    };
+                //}
 
                 _logger.LogInformation("Checked if Duplicate:No Duplicate");
                 //Get Account nnumber
@@ -99,7 +95,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                 _unitOfWork.BeginTransaction();
 
-                var account = new MainAccountDTO
+                var account = new MainAccount 
                 {
                     AccountName = memberDetail.MemberName,
                     AccountType = "Member",
@@ -108,21 +104,22 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                 };
 
-                var mappedAccount = new AutoMapper<MainAccountDTO, MainAccount>().MapToObject(account);
-
+ 
                 _logger.LogInformation($"Attempting to Create an Account Record in Main Account Table");
-                _unitOfWork._iMainAccountService.Create(account);
+                _mainAccountService.Create(account);
                 _logger.LogInformation($"Main Account Created");
 
                 _logger.LogInformation($"Attempting to Add Email to Mailing List Table");
 
                 //add email to Mailing List 
-                var mailingListDetail = new MailingListDTO
+                var mailingListDetail = new MailingList
                 {
                     GroupId = memberDetail.GroupId,
                     Email = memberDetail.Email
                 };
-                _unitOfWork._iMailingListService.Create(mailingListDetail);
+
+ 
+                _unitOfWork._iMailingListRepository.Create(mailingListDetail);
                 _logger.LogInformation($"Email added to Mailing List Successfully");
 
                 
@@ -134,7 +131,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                 //mapped.CreatedDate = DateTime.Now;
                 //mapped.CreatedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
                 _logger.LogInformation($"Attempting to add Member Details to Database");
-                _unitOfWork._iMemberDetailService.Create(memberDetail);
+                _unitOfWork._memberDetailRepository.Create(mapped);
                 _logger.LogInformation($"Member Details Successfully Added");
 
                 _logger.LogInformation("Attempting to Commit Transaction Scope");
@@ -347,7 +344,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
             try
             {
-                await _memberDetailService.Delete(x => x.MemberId == memberDetailId);
+                await _unitOfWork._memberDetailRepository.Delete(x=>x.MemberId == memberDetailId);
                 return new OutputHandler
                 {
                     IsErrorOccured = false,
@@ -362,14 +359,18 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
         public async Task<MemberDetailDTO> GetMemberDetail(int memberDetailId)
         {
-            var output = await _memberDetailService.GetSingleItem(x => x.MemberId == memberDetailId);
-            return new AutoMapper<MemberDetail, MemberDetailDTO>().MapToObject(output);
+            var output = await _unitOfWork._memberDetailRepository.GetSingleItem(x => x.MemberId == memberDetailId);
+            var mapped = new AutoMapper<MemberDetail,MemberDetailDTO>().MapToObject(output);
+
+            return mapped;
         }
 
         public async Task<IEnumerable<MemberDetailDTO>> GetAllMemberDetails()
         {
-            var output = await _memberDetailService.GetAll();
-            return new AutoMapper<MemberDetail, MemberDetailDTO>().MapToList(output);
+            var output = await _unitOfWork._memberDetailRepository.GetAll();
+            var mapped = new AutoMapper<MemberDetail,MemberDetailDTO>().MapToList(output);
+
+            return mapped;
         }
 
         public async Task<OutputHandler> Update(MemberDetailDTO memberDetail)
@@ -377,8 +378,8 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
             try
             {
                 //  check record already exist to avoid duplicates
-                bool isExist = await _memberDetailService.AnyAsync(x => x.MemberId == memberDetail.MemberId);
-                if (isExist)
+                var isExist = await _unitOfWork._memberDetailRepository.AnyAsync(x => x.MemberId == memberDetail.MemberId);
+                if (isExist )
                 {
                     return new OutputHandler
                     {
@@ -387,11 +388,12 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                     };
                 }
-                var mapped = new AutoMapper<MemberDetailDTO, MemberDetail>().MapToObject(memberDetail);
+                //var mapped = new AutoMapper<MemberDetailDTO, MemberDetail>().MapToObject(memberDetail);
                 //mapped.ModifiedDate = DateTime.Now;
                 //mapped.ModifiedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
+               var mapped = new AutoMapper<MemberDetailDTO, MemberDetail>().MapToObject(memberDetail);
 
-                var result = await _memberDetailService.Update(mapped);
+                var result = await _unitOfWork._memberDetailRepository.Update(mapped);
                 return result;
 
             }

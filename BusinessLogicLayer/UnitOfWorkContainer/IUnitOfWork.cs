@@ -1,6 +1,8 @@
 ﻿using BusinessLogicLayer.Services.MailingListServiceContainer;
 using BusinessLogicLayer.Services.MainAccountsServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
+using DataAccessLayer.Models;
+using RDIAccountsAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +13,7 @@ namespace BusinessLogicLayer.UnitOfWorkContainer
 {
     public interface IUnitOfWork : IDisposable
     {
-        IMainAccountService _iMainAccountService { get; }
-        IMemberDetailService _iMemberDetailService { get; }
-        IMailingListService _iMailingListService { get; }
+        
 
         void SaveChanges();
         void BeginTransaction();
