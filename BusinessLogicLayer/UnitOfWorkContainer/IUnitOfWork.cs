@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 
 namespace BusinessLogicLayer.UnitOfWorkContainer
 {
-    public interface IUnitOfWork : IDisposable
-    {
+    //public interface IUnitOfWork 
+    //{
         
 
-        void SaveChanges();
-        void BeginTransaction();
-        void CommitTransaction();
-        void RollbackTransaction();
-    }
+    //    void SaveChanges();
+    //    void BeginTransaction();
+    //    void CommitTransaction();
+    //    void RollbackTransaction();
+    //}
 }

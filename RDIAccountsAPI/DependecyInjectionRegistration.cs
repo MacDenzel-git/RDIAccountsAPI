@@ -18,7 +18,6 @@ using BusinessLogicLayer.Services.MemberDetailServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypeServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypesServiceContainer;
-using BusinessLogicLayer.UnitOfWorkContainer;
 using DataAccessLayer.Models;
 using RDIAccountsAPI;
 

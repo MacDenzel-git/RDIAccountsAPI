@@ -4,9 +4,9 @@ using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.Services.MailingListServiceContainer;
 using BusinessLogicLayer.Services.MainAccountsServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
-using BusinessLogicLayer.UnitOfWorkContainer;
- using DataAccessLayer.DataTransferObjects;
+  using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
+using DataAccessLayer.UnitOfWork;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,20 +22,19 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
     public class MemberDetailService : IMemberDetailService
     {
         private readonly IMailingListService _mailingListService;
-         private readonly IMainAccountService _mainAccountService;
+        private readonly IMainAccountService _mainAccountService;
         private readonly IGroupDetailService _groupService;
         private readonly EasyAccountDbContext _context;
         private ILogger<MemberDetailService> _logger;
-        private readonly IUnitOfWork _unitOfWork;
 
+        private UnityOfWork _unitOfWork = new UnityOfWork();
         public MemberDetailService( 
-            IGroupDetailService groupService, ILogger<MemberDetailService> logger, EasyAccountDbContext context, IUnitOfWork unitOfWork)
+            IGroupDetailService groupService, ILogger<MemberDetailService> logger, EasyAccountDbContext context)
         {
               _groupService = groupService;
             _logger = logger;
              _context = context;
-            _unitOfWork = unitOfWork;
-        }
+         }
         public async Task<OutputHandler> Create(MemberDetailDTO memberDetail)
         {
 
@@ -68,13 +67,13 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                 if (output.IsErrorOccured)
                 {
-                    _logger.LogInformation($"Exited Account Creation with an Error {output.Message}");
+                    _logger.LogInformation($"Exited Account Generation with an Error {output.Message}");
                     //if there's an error go back
                     return new OutputHandler { IsErrorOccured = true, Message = output.Message };
                 }
                 else
                 {
-                    _logger.LogInformation($"Exited Account Successfully {output.Message}");
+                    _logger.LogInformation($"Exited Account creation Successfully {output.Message}");
 
                     accountNumber = output.Result.ToString();
                     if (accountNumber is null)
@@ -95,19 +94,29 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                 _unitOfWork.BeginTransaction();
 
-                var account = new MainAccount 
+                var account = new MainAccount
                 {
                     AccountName = memberDetail.MemberName,
                     AccountType = "Member",
                     Balance = 0,
-                    AccountNumber = accountNumber
+                    AccountNumber = accountNumber,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = "LoggedInUser"
 
                 };
 
  
                 _logger.LogInformation($"Attempting to Create an Account Record in Main Account Table");
-                _mainAccountService.Create(account);
-                _logger.LogInformation($"Main Account Created");
+                var mainAccountResult = await _unitOfWork.MainAccountRepository.Create(account);
+                if (mainAccountResult.IsErrorOccured)
+                {
+                    return mainAccountResult;
+                }
+                else
+                {
+                    _logger.LogInformation($"Main Account Created");
+
+                }
 
                 _logger.LogInformation($"Attempting to Add Email to Mailing List Table");
 
@@ -118,11 +127,20 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                     Email = memberDetail.Email
                 };
 
- 
-                _unitOfWork._iMailingListRepository.Create(mailingListDetail);
-                _logger.LogInformation($"Email added to Mailing List Successfully");
+                var mailingListCreationResult = await _unitOfWork.MailingListRepository.Create(mailingListDetail);
+                if (mailingListCreationResult.IsErrorOccured)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return mailingListCreationResult;
+                }
+                else
+                {
+                    _logger.LogInformation($"Email added to Mailing List Successfully");
 
-                
+                }
+
+
+
 
 
 
@@ -131,7 +149,18 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                 //mapped.CreatedDate = DateTime.Now;
                 //mapped.CreatedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
                 _logger.LogInformation($"Attempting to add Member Details to Database");
-                _unitOfWork._memberDetailRepository.Create(mapped);
+               var memberCreationResult = await _unitOfWork.MemberRepository.Create(mapped);
+                if (memberCreationResult.IsErrorOccured)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return memberCreationResult;
+                }
+                else
+                {
+                    _logger.LogInformation($"Main Account Created");
+
+                }
+
                 _logger.LogInformation($"Member Details Successfully Added");
 
                 _logger.LogInformation("Attempting to Commit Transaction Scope");
@@ -344,7 +373,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
             try
             {
-                await _unitOfWork._memberDetailRepository.Delete(x=>x.MemberId == memberDetailId);
+                await _unitOfWork.MemberRepository.Delete(x=>x.MemberId == memberDetailId);
                 return new OutputHandler
                 {
                     IsErrorOccured = false,
@@ -359,7 +388,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
         public async Task<MemberDetailDTO> GetMemberDetail(int memberDetailId)
         {
-            var output = await _unitOfWork._memberDetailRepository.GetSingleItem(x => x.MemberId == memberDetailId);
+            var output = await _unitOfWork.MemberRepository.GetSingleItem(x => x.MemberId == memberDetailId);
             var mapped = new AutoMapper<MemberDetail,MemberDetailDTO>().MapToObject(output);
 
             return mapped;
@@ -367,7 +396,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
         public async Task<IEnumerable<MemberDetailDTO>> GetAllMemberDetails()
         {
-            var output = await _unitOfWork._memberDetailRepository.GetAll();
+            var output = await _unitOfWork.MemberRepository.GetAll();
             var mapped = new AutoMapper<MemberDetail,MemberDetailDTO>().MapToList(output);
 
             return mapped;
@@ -378,7 +407,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
             try
             {
                 //  check record already exist to avoid duplicates
-                var isExist = await _unitOfWork._memberDetailRepository.AnyAsync(x => x.MemberId == memberDetail.MemberId);
+                var isExist = await _unitOfWork.MemberRepository.AnyAsync(x => x.MemberId == memberDetail.MemberId);
                 if (isExist )
                 {
                     return new OutputHandler
@@ -393,7 +422,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                 //mapped.ModifiedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
                var mapped = new AutoMapper<MemberDetailDTO, MemberDetail>().MapToObject(memberDetail);
 
-                var result = await _unitOfWork._memberDetailRepository.Update(mapped);
+                var result = await _unitOfWork.MemberRepository.Update(mapped);
                 return result;
 
             }

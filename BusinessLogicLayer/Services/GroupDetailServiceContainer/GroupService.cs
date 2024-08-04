@@ -1,9 +1,13 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
- using BusinessLogicLayer.GroupDetailsServiceContainer;
+using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.Services.LoanConfigurationServiceContainer;
+using BusinessLogicLayer.Services.MainAccountsServiceContainer;
+using BusinessLogicLayer.Services.MemberDetailServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
+using DataAccessLayer.UnitOfWork;
+using Microsoft.Extensions.Logging;
 using RDIAccountsAPI;
 
 namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
@@ -12,11 +16,194 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
     {
 
         private readonly GenericRepository<GroupDetail> _service;
-        public GroupDetailService(GenericRepository<GroupDetail> service)
+        private readonly IMainAccountService _mainAccountService;
+
+        private ILogger<MemberDetailService> _logger;
+        private UnityOfWork _unitOfWork = new UnityOfWork();
+
+        public GroupDetailService(IMainAccountService mainAccountService,ILogger<MemberDetailService> logger, GenericRepository<GroupDetail> service)
         {
             _service = service;
+            _logger = logger;
+            _mainAccountService = mainAccountService;
         }
+
         public async Task<OutputHandler> Create(GroupDetailDTO groupDetail)
+        {
+
+
+            try
+            {
+                //check if record with same name already exist to avoid duplicates  - check phone number
+                bool isExist = await _unitOfWork.GroupDetailRepository.AnyAsync(x => x.GroupName == groupDetail.GroupName);
+                if (isExist)
+                {
+                    return new OutputHandler
+                    {
+                        IsErrorOccured = true,
+                        Message = StandardMessages.GetDuplicateMessage(groupDetail.GroupName)
+
+                    };
+                }
+
+
+                isExist = await _unitOfWork.GroupDetailRepository.AnyAsync(x => x.GroupInitials == groupDetail.GroupInitials);
+                if (isExist)
+                {
+                    return new OutputHandler
+                    {
+                        IsErrorOccured = true,
+                        Message = StandardMessages.GetDuplicateMessage(groupDetail.GroupInitials)
+
+                    };
+                }
+
+
+                _logger.LogInformation("Checked if Duplicate:No Duplicate- Group Name and Group Initials");
+                //Get Account nnumber
+                //Compute Variables used to Create an account.
+                string accountNumber = "";
+
+
+                _logger.LogInformation("Started Group Creation");
+                _logger.LogInformation("Create Account Number");
+
+                var output = await GetAccountNumber(groupDetail);
+
+
+                if (output.IsErrorOccured)
+                {
+                    _logger.LogError($"Exited GroupAccount Account Creation with an Error {output.Message}");
+                    //if there's an error go back
+                    return new OutputHandler { IsErrorOccured = true, Message = output.Message };
+                }
+                else
+                {
+                    _logger.LogInformation($"Exited Generation creation Successfully {output.Message}");
+
+                    accountNumber = output.Result.ToString();
+                    if (accountNumber is null)
+                    {
+                        _logger.LogError($"Exited Account Creation successfully but account Number is Empty returning Error");
+
+                        return new OutputHandler
+                        {
+                            Message = "Failed to Compute Account Number, Result returned null",
+                            IsErrorOccured = true,
+
+                        };
+                    }
+                }
+                //Create Account 
+                //LOG ENTRY CREATE ACCOUNT
+                _logger.LogInformation($"Creating an account for member");
+
+                _unitOfWork.BeginTransaction();
+
+                var account = new MainAccount
+                {
+                    AccountName = groupDetail.GroupName,
+                    AccountType = "Group",
+                    Balance = 0,
+                    AccountNumber = accountNumber,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = "LoggedInUser"
+
+                };
+
+
+                _logger.LogInformation($"Attempting to Create Group Account Record in Main Account Table");
+                var mainAccountResult = await _unitOfWork.MainAccountRepository.Create(account);
+                if (mainAccountResult.IsErrorOccured)
+                {
+                    _logger.LogError($"Exited Group Account Account Creation with an Error {output.Message}");
+
+                    return mainAccountResult;
+                }
+                else
+                {
+                    _logger.LogInformation($"Main Account Created");
+
+                }
+
+                _logger.LogInformation($"Attempting to Add Email to Mailing List Table");
+
+
+                var mapped = new AutoMapper<GroupDetailDTO, GroupDetail>().MapToObject(groupDetail);
+                //mapped.CreatedDate = DateTime.Now;
+                //mapped.CreatedBy = await _sessionStorage.GetItemAsync<String>("LoggedInUser");
+                _logger.LogInformation($"Attempting to add Group Details to Database");
+                var memberCreationResult = await _unitOfWork.GroupDetailRepository.Create(mapped);
+                if (memberCreationResult.IsErrorOccured)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return memberCreationResult;
+                }
+                else
+                {
+                    _logger.LogInformation($"Main Account Created");
+
+                }
+
+
+                _logger.LogInformation("Attempting to Commit Transaction Scope");
+                _unitOfWork.CommitTransaction();
+                _logger.LogInformation($"Transaction Scope Competed for Member {groupDetail.GroupName}-{accountNumber}");
+
+                return new OutputHandler { IsErrorOccured = false, Message = "Successfully Completed" };
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Something went wrong, Attempting to Rollback ERROR:{ex}");
+
+                _unitOfWork.RollbackTransaction();
+
+                _logger.LogInformation($"Rollback Complete");
+
+                return StandardMessages.getExceptionMessage(ex);
+            }
+
+        }
+
+        private async Task<OutputHandler> GetAccountNumber(GroupDetailDTO GroupDetail)
+        {
+            //M093NTH01DM
+            //Format M=Member/ G=Group, RandomNumber-GroupInitials, 01, Member Initials 
+
+            try
+            {
+                string accountNumber = "";
+
+                _logger.LogInformation("Group account creation started");
+
+                string groupId = "";
+                if (GroupDetail.GroupId < 10)
+                {
+                    groupId = $"0{groupId}";
+                }
+                else
+                {
+                    groupId = GroupDetail.GroupId.ToString();
+                }
+
+                //G for Group - System Group - GroupId
+                accountNumber = $"G01295{GroupDetail.GroupInitials}{GroupDetail.GroupId}";
+                _logger.LogInformation($"Account Created {accountNumber}");
+
+                return new OutputHandler { IsErrorOccured = false, Message = "Success", Result = accountNumber };
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StandardMessages.getExceptionMessage(ex);
+            }
+            //M093NTH01DM
+        }
+
+        public async Task<OutputHandler> Createv1(GroupDetailDTO groupDetail)
         {
             try
             {
@@ -101,7 +288,7 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
             }
             catch (Exception ex)
             {
-               throw new Exception(ex.Message);
+                throw new Exception(ex.Message);
             }
         }
 
