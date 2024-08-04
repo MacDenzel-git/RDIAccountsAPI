@@ -14,7 +14,9 @@ namespace DataAccessLayer.UnitOfWork
     {
         private EasyAccountDbContext context = new EasyAccountDbContext();
         private GenericRepository<MemberDetail> memberRepository;
-        private GenericRepository<MainAccount> mainAccountRepository;
+        private GenericRepository<MemberAccount> memberAccountRepository;
+        private GenericRepository<GroupAccount> groupAccountRepository;
+        private GenericRepository<JournalEntry> journalEntryRepository;
         private GenericRepository<GroupDetail> groupDetailRepository;
         private GenericRepository<MailingList> mailingListRepository;
         private IDbContextTransaction _transaction;
@@ -28,6 +30,18 @@ namespace DataAccessLayer.UnitOfWork
                     this.memberRepository = new GenericRepository<MemberDetail>(context);
                 }
                 return memberRepository;
+            }
+        } 
+        
+        public GenericRepository<JournalEntry> JournalEntryRepository
+        {
+            get
+            {
+                if (this.journalEntryRepository == null)
+                {
+                    this.journalEntryRepository = new GenericRepository<JournalEntry>(context);
+                }
+                return journalEntryRepository;
             }
         }
 
@@ -55,18 +69,30 @@ namespace DataAccessLayer.UnitOfWork
             }
         }
 
-        public GenericRepository<MainAccount> MainAccountRepository
+        public GenericRepository<MemberAccount> MemberAccountRepository
         {
             get
             {
-                if (this.mainAccountRepository == null)
+                if (this.memberAccountRepository == null)
                 {
-                    this.mainAccountRepository = new GenericRepository<MainAccount>(context);
+                    this.memberAccountRepository = new GenericRepository<MemberAccount>(context);
                 }
-                return mainAccountRepository;
+                return memberAccountRepository;
             }
         }
 
+
+        public GenericRepository<GroupAccount> GroupAccountRepository
+        {
+            get
+            {
+                if (this.groupAccountRepository == null)
+                {
+                    this.groupAccountRepository = new GenericRepository<GroupAccount>(context);
+                }
+                return groupAccountRepository;
+            }
+        }
         public void Save()
         {
             context.SaveChanges();

@@ -3,17 +3,23 @@ using AllinOne.DataHandlers.ErrorHandler;
  using BusinessLogicLayer.JournalEntrysServiceContainer;
  using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
+using DataAccessLayer.UnitOfWork;
+using Microsoft.Extensions.Logging;
 using RDIAccountsAPI;
 
 namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 {
     public class JournalEntryService : IJournalEntryService
     {
- 
+
+        private UnityOfWork _unitOfWork = new UnityOfWork();
+
         private readonly GenericRepository<JournalEntry> _service;
-        public JournalEntryService(GenericRepository<JournalEntry> service)
+        private ILogger<JournalEntryService> _logger;
+        public JournalEntryService(GenericRepository<JournalEntry> service, ILogger<JournalEntryService> logger)
         {
-             _service = service;
+            _service = service;
+            _logger = logger;
         }
         public async Task<OutputHandler> Create(JournalEntryDTO journalEntry)
         {
@@ -102,6 +108,65 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
             {
                 return StandardMessages.getExceptionMessage(ex);
             }
+        }
+
+
+        public async Task<OutputHandler> ShareTransaction(JournalEntryDTO   entryDetails)
+        {
+            //Who is making the share 
+            try
+            {
+                var memberAccount = await _unitOfWork.MemberRepository.GetSingleItem(x => x.MemberId == entryDetails.MemberId);
+
+                _logger.LogInformation("Starting Share transaction entry");
+
+                
+
+                
+
+                _unitOfWork.BeginTransaction();
+
+                var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
+                var journalEntryResult = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+
+                _logger.LogInformation($"Updated Shares Made");
+                _logger.LogInformation($"Getting Associated Member Account");
+
+              var memberDetails = await  _unitOfWork.MemberRepository.GetSingleItem(x => x.MemberId == entryDetails.MemberId);
+                _logger.LogInformation($"Updating Shares Contributed in Member Account");
+              //memberDetails.ba
+
+                _logger.LogInformation($"Updating Main Account Balance");
+
+
+
+
+                _unitOfWork.CommitTransaction();
+                return new OutputHandler
+                {
+
+                };
+            }
+            catch (Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
+
+        }
+
+
+        public async Task<OutputHandler> ShareTransactionApproval(JournalEntryDTO entryDetails)
+        {
+            //Who is making the share 
+            var memberAccount = await _unitOfWork.MemberRepository.GetSingleItem(x => x.MemberId == entryDetails.MemberId);
+
+        
+              return new OutputHandler
+            {
+
+            };
+
         }
 
     }

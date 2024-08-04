@@ -7,15 +7,10 @@ public partial class JournalEntry
 {
     public long JournalEntryTransId { get; set; }
 
-    public string MemberId { get; set; } = null!;
-
+    public int MemberId { get; set; } 
     public string ReceiptNo { get; set; } = null!;
 
     public string MemberName { get; set; } = null!;
-
-    public string MemberAccountNumber { get; set; } = null!;
-
-    public string? LoanAccountNumber { get; set; }
 
     public string? ChqNo { get; set; }
 
@@ -56,6 +51,12 @@ public partial class JournalEntry
     public double InterestCalculated { get; set; }
 
     public string TransactionTypeDescription { get; set; } = null!;
+
+    public string? TransactionStatus { get; set; }
+
+    public string? FromAccountNumber { get; set; }
+
+    public string? ToAccountNumber { get; set; }
 
     public virtual TransactionType TranscationType { get; set; } = null!;
 }

@@ -7,17 +7,11 @@ public partial class JournalEntryDTO
 {
     public long JournalEntryTransId { get; set; }
 
-    public string MemberId { get; set; } = null!;
+    public int MemberId { get; set; } 
 
     public string ReceiptNo { get; set; } = null!;
 
     public string MemberName { get; set; } = null!;
-
-    public string TransactionTypeId { get; set; } = null!;
-
-    public string MemberAccountNumber { get; set; } = null!;
-
-    public string? LoanAccountNumber { get; set; }
 
     public string? ChqNo { get; set; }
 
@@ -37,7 +31,7 @@ public partial class JournalEntryDTO
 
     public string Processedby { get; set; } = null!;
 
-    public int? TranscationTypeId { get; set; }
+    public int TranscationTypeId { get; set; }
 
     public string LoanBalance { get; set; } = null!;
 
@@ -58,4 +52,11 @@ public partial class JournalEntryDTO
     public double InterestCalculated { get; set; }
 
     public string TransactionTypeDescription { get; set; } = null!;
+
+    public string? TransactionStatus { get; set; }
+
+    public string? FromAccountNumber { get; set; }
+
+    public string? ToAccountNumber { get; set; }
+
 }

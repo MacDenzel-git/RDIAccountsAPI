@@ -1,5 +1,5 @@
 ﻿
- using BusinessLogicLayer.Services.MainAccountsServiceContainer;
+ using BusinessLogicLayer.Services.MemberAccountsServiceContainer;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
  using Microsoft.AspNetCore.Http;
@@ -10,10 +10,10 @@ namespace RDIAccountsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MainAccountController : ControllerBase
+    public class MemberAccountController : ControllerBase
     {
-        private readonly IMainAccountService _service;
-        public MainAccountController(IMainAccountService service)
+        private readonly IMemberAccountService _service;
+        public MemberAccountController(IMemberAccountService service)
         {
             _service = service;
         }
@@ -21,12 +21,12 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API for creating client Type
         /// </summary>
-        /// <param name="MainAccount"></param>
+        /// <param name="MemberAccount"></param>
         /// <returns></returns>
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(MainAccountDTO mainAccount)
+        public async Task<IActionResult> Create(MemberAccountDTO groupAccount)
         {
-            var outputHandler = await _service.Create(mainAccount);
+            var outputHandler = await _service.Create(groupAccount);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -37,13 +37,13 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API for updating client Type
         /// </summary>
-        /// <param name="MainAccount"></param>
+        /// <param name="MemberAccount"></param>
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(MainAccountDTO mainAccount)
+        public async Task<IActionResult> Update(MemberAccountDTO groupAccount)
         {
-            var outputHandler = await _service.Update(mainAccount);
+            var outputHandler = await _service.Update(groupAccount);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -57,10 +57,10 @@ namespace RDIAccountsAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetAllMainAccounts")]
-        public async Task<IActionResult> GetAllMainAccounts()
+        [HttpGet("GetAllMemberAccounts")]
+        public async Task<IActionResult> GetAllMemberAccounts()
         {
-            var output = await _service.GetAllMainAccounts();
+            var output = await _service.GetAllMemberAccounts();
             if (output != null)
             {
                 return Ok(output);
@@ -71,13 +71,13 @@ namespace RDIAccountsAPI.Controllers
         /// <summary>
         /// This is the API that deletes a client Type
         /// </summary>
-        /// <param name="MainAccountId"></param>
+        /// <param name="MemberAccountId"></param>
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int MainAccountId)
+        public async Task<IActionResult> Delete(int MemberAccountId)
         {
-            var output = await _service.Delete(MainAccountId);
+            var output = await _service.Delete(MemberAccountId);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);
@@ -94,10 +94,10 @@ namespace RDIAccountsAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetMainAccount")]
-        public async Task<IActionResult> GetMainAccount(int MainAccountId)
+        [HttpGet("GetMemberAccount")]
+        public async Task<IActionResult> GetMemberAccount(int MemberAccountId)
         {
-            var output = await _service.GetMainAccount(MainAccountId);
+            var output = await _service.GetMemberAccount(MemberAccountId);
             if (output != null)
             {
                 return Ok(output);

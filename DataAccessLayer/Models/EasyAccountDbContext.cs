@@ -15,7 +15,11 @@ public partial class EasyAccountDbContext : DbContext
     {
     }
 
+    public virtual DbSet<GroupAccount> GroupAccounts { get; set; }
+
     public virtual DbSet<GroupDetail> GroupDetails { get; set; }
+
+    public virtual DbSet<GroupGorveningBody> GroupGorveningBodies { get; set; }
 
     public virtual DbSet<InterestAccount> InterestAccounts { get; set; }
 
@@ -27,7 +31,7 @@ public partial class EasyAccountDbContext : DbContext
 
     public virtual DbSet<MailingList> MailingLists { get; set; }
 
-    public virtual DbSet<MainAccount> MainAccounts { get; set; }
+    public virtual DbSet<MemberAccount> MemberAccounts { get; set; }
 
     public virtual DbSet<MemberDetail> MemberDetails { get; set; }
 
@@ -39,12 +43,40 @@ public partial class EasyAccountDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<GroupAccount>(entity =>
+        {
+            entity.HasKey(e => e.GroupAccountId).HasName("PK_MainAccounts");
+
+            entity.Property(e => e.CreatedBy).HasMaxLength(50);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.Ggbid).HasColumnName("GGBId");
+            entity.Property(e => e.GroupAccountName).HasMaxLength(50);
+            entity.Property(e => e.GroupAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50);
+            entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Ggb).WithMany(p => p.GroupAccounts)
+                .HasForeignKey(d => d.Ggbid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_GroupAccounts_GroupGorveningBody");
+        });
+
         modelBuilder.Entity<GroupDetail>(entity =>
         {
             entity.HasKey(e => e.GroupId);
 
             entity.Property(e => e.GroupInitials).HasMaxLength(50);
             entity.Property(e => e.GroupName).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<GroupGorveningBody>(entity =>
+        {
+            entity.HasKey(e => e.Ggbid);
+
+            entity.ToTable("GroupGorveningBody");
+
+            entity.Property(e => e.Ggbid).HasColumnName("GGBId");
+            entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         modelBuilder.Entity<InterestAccount>(entity =>
@@ -70,8 +102,7 @@ public partial class EasyAccountDbContext : DbContext
             entity.Property(e => e.DrCr)
                 .HasMaxLength(10)
                 .IsFixedLength();
-            entity.Property(e => e.LoanAccountNumber).HasMaxLength(50);
-            entity.Property(e => e.MemberAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.FromAccountNumber).HasMaxLength(50);
             entity.Property(e => e.MemberId).HasMaxLength(50);
             entity.Property(e => e.PayMode).HasMaxLength(50);
             entity.Property(e => e.ProcessDateTime).HasColumnType("datetime");
@@ -89,6 +120,8 @@ public partial class EasyAccountDbContext : DbContext
                 .HasMaxLength(2)
                 .IsUnicode(false)
                 .IsFixedLength();
+            entity.Property(e => e.ToAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.TransactionStatus).HasMaxLength(50);
             entity.Property(e => e.TransactionTypeDescription).HasMaxLength(50);
 
             entity.HasOne(d => d.TranscationType).WithMany(p => p.JournalEntries)
@@ -127,15 +160,14 @@ public partial class EasyAccountDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(400);
         });
 
-        modelBuilder.Entity<MainAccount>(entity =>
+        modelBuilder.Entity<MemberAccount>(entity =>
         {
-            entity.HasKey(e => e.AccountId);
+            entity.HasKey(e => e.MemberAccountId).HasName("PK_New_MemberAccounts");
 
-            entity.Property(e => e.AccountName).HasMaxLength(50);
-            entity.Property(e => e.AccountNumber).HasMaxLength(50);
-            entity.Property(e => e.AccountType).HasMaxLength(50);
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.MemberAccountName).HasMaxLength(50);
+            entity.Property(e => e.MemberAccountNumber).HasMaxLength(50);
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
         });

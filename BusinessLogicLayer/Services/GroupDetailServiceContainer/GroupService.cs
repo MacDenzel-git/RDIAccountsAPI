@@ -1,10 +1,7 @@
 ﻿using AllinOne.DataHandlers;
 using AllinOne.DataHandlers.ErrorHandler;
 using BusinessLogicLayer.GroupDetailsServiceContainer;
-using BusinessLogicLayer.Services.LoanConfigurationServiceContainer;
-using BusinessLogicLayer.Services.MainAccountsServiceContainer;
-using BusinessLogicLayer.Services.MemberDetailServiceContainer;
-using DataAccessLayer.DataTransferObjects;
+using BusinessLogicLayer.Services.GroupAccountsServiceContainer;
 using DataAccessLayer.Models;
 using DataAccessLayer.UnitOfWork;
 using Microsoft.Extensions.Logging;
@@ -16,16 +13,16 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
     {
 
         private readonly GenericRepository<GroupDetail> _service;
-        private readonly IMainAccountService _mainAccountService;
+        private readonly IGroupAccountService _mainAccountService;
 
-        private ILogger<MemberDetailService> _logger;
+        private ILogger<GroupDetailService> _logger;
         private UnityOfWork _unitOfWork = new UnityOfWork();
 
-        public GroupDetailService(IMainAccountService mainAccountService,ILogger<MemberDetailService> logger, GenericRepository<GroupDetail> service)
+        public GroupDetailService(IGroupAccountService groupAccountService,ILogger<GroupDetailService> logger, GenericRepository<GroupDetail> service)
         {
             _service = service;
             _logger = logger;
-            _mainAccountService = mainAccountService;
+            _mainAccountService = groupAccountService;
         }
 
         public async Task<OutputHandler> Create(GroupDetailDTO groupDetail)
@@ -100,20 +97,20 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
 
                 _unitOfWork.BeginTransaction();
 
-                var account = new MainAccount
+                var account = new GroupAccount
                 {
-                    AccountName = groupDetail.GroupName,
-                    AccountType = "Group",
-                    Balance = 0,
-                    AccountNumber = accountNumber,
+                    GroupAccountName = groupDetail.GroupName,
+                     CurrentBalance = 0,
+                    GroupAccountNumber = accountNumber,
                     CreatedDate = DateTime.Now,
-                    CreatedBy = "LoggedInUser"
+                    CreatedBy = "LoggedInUser",
+                    Ggbid = 0, //insert Ge=
 
                 };
 
 
                 _logger.LogInformation($"Attempting to Create Group Account Record in Main Account Table");
-                var mainAccountResult = await _unitOfWork.MainAccountRepository.Create(account);
+                var mainAccountResult = await _unitOfWork.GroupAccountRepository.Create(account);
                 if (mainAccountResult.IsErrorOccured)
                 {
                     _logger.LogError($"Exited Group Account Account Creation with an Error {output.Message}");
@@ -166,29 +163,31 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
 
         }
 
-        private async Task<OutputHandler> GetAccountNumber(GroupDetailDTO GroupDetail)
+        private async Task<OutputHandler> GetAccountNumber(GroupDetailDTO groupDetail)
         {
             //M093NTH01DM
             //Format M=Member/ G=Group, RandomNumber-GroupInitials, 01, Member Initials 
 
             try
             {
+                var groups = await _unitOfWork.GroupDetailRepository.GetAll();
+                groupDetail.GroupId = groups.Max(x => x.GroupId);
                 string accountNumber = "";
 
                 _logger.LogInformation("Group account creation started");
 
                 string groupId = "";
-                if (GroupDetail.GroupId < 10)
+                if (groupDetail.GroupId < 10)
                 {
                     groupId = $"0{groupId}";
                 }
                 else
                 {
-                    groupId = GroupDetail.GroupId.ToString();
+                    groupId = groupDetail.GroupId.ToString();
                 }
 
                 //G for Group - System Group - GroupId
-                accountNumber = $"G01295{GroupDetail.GroupInitials}{GroupDetail.GroupId}";
+                accountNumber = $"G01295{groupDetail.GroupInitials}{groupDetail.GroupId}";
                 _logger.LogInformation($"Account Created {accountNumber}");
 
                 return new OutputHandler { IsErrorOccured = false, Message = "Success", Result = accountNumber };

@@ -4,7 +4,8 @@
 using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.InterestAccountsServiceContainer;
 using BusinessLogicLayer.JournalEntrysServiceContainer;
-using BusinessLogicLayer.Logging;
+using BusinessLogicLayer.Services.GroupAccountServiceContainer;
+using BusinessLogicLayer.Services.GroupAccountsServiceContainer;
 using BusinessLogicLayer.Services.GroupDetailServiceContainer;
 using BusinessLogicLayer.Services.InterestAccountServiceContainer;
 using BusinessLogicLayer.Services.JournalEntryServiceContainer;
@@ -12,14 +13,13 @@ using BusinessLogicLayer.Services.LoanAccountServiceContainer;
 using BusinessLogicLayer.Services.LoanAccountsServiceContainer;
 using BusinessLogicLayer.Services.LoanConfigurationServiceContainer;
 using BusinessLogicLayer.Services.MailingListServiceContainer;
-using BusinessLogicLayer.Services.MainAccountServiceContainer;
-using BusinessLogicLayer.Services.MainAccountsServiceContainer;
+using BusinessLogicLayer.Services.MemberAccountServiceContainer;
+using BusinessLogicLayer.Services.MemberAccountsServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailServiceContainer;
 using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypeServiceContainer;
 using BusinessLogicLayer.Services.TransactionTypesServiceContainer;
 using DataAccessLayer.Models;
-using RDIAccountsAPI;
 
 namespace RDIAccountsAPI
 {
@@ -32,7 +32,8 @@ namespace RDIAccountsAPI
 			serviceCollection.AddScoped<GenericRepository<JournalEntry>>();
 			serviceCollection.AddScoped<GenericRepository<LoanAccount>>();
 			serviceCollection.AddScoped<GenericRepository<LoanConfiguration>>();
-			serviceCollection.AddScoped<GenericRepository<MainAccount>>();
+			serviceCollection.AddScoped<GenericRepository<MemberAccount>>();
+			serviceCollection.AddScoped<GenericRepository<GroupAccount>>();
 			serviceCollection.AddScoped<GenericRepository<MailingList>>();
 			serviceCollection.AddScoped<GenericRepository<MemberDetail>>();
 			return serviceCollection.AddScoped<GenericRepository<TransactionType>>();
@@ -43,7 +44,8 @@ namespace RDIAccountsAPI
 		{
 			service.AddScoped<IGroupDetailService, GroupDetailService>();
 			service.AddScoped<ILoanAccountService, LoanAccountService>();
-			service.AddScoped<IMainAccountService, MainAccountService>();
+			service.AddScoped<IMemberAccountService, MemberAccountService>();
+			service.AddScoped<IGroupAccountService, GroupAccountService>();
 			service.AddScoped<IJournalEntryService, JournalEntryService>();
 			service.AddScoped<IMemberDetailService, MemberDetailService>();
 			service.AddScoped<ITransactionTypeService, TransactionTypeService>();

@@ -2,8 +2,7 @@
 using AllinOne.DataHandlers.ErrorHandler;
 using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.Services.MailingListServiceContainer;
-using BusinessLogicLayer.Services.MainAccountsServiceContainer;
-using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
+ using BusinessLogicLayer.Services.MemberDetailsServiceContainer;
   using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using DataAccessLayer.UnitOfWork;
@@ -22,8 +21,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
     public class MemberDetailService : IMemberDetailService
     {
         private readonly IMailingListService _mailingListService;
-        private readonly IMainAccountService _mainAccountService;
-        private readonly IGroupDetailService _groupService;
+         private readonly IGroupDetailService _groupService;
         private readonly EasyAccountDbContext _context;
         private ILogger<MemberDetailService> _logger;
 
@@ -94,20 +92,20 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
 
                 _unitOfWork.BeginTransaction();
 
-                var account = new MainAccount
+                var account = new MemberAccount
                 {
-                    AccountName = memberDetail.MemberName,
-                    AccountType = "Member",
-                    Balance = 0,
-                    AccountNumber = accountNumber,
+                    MemberAccountName = memberDetail.MemberName,
+                     CurrentBalance = 0,
+                    MemberAccountNumber = accountNumber,
                     CreatedDate = DateTime.Now,
-                    CreatedBy = "LoggedInUser"
+                    CreatedBy = "LoggedInUser",
+                    GroupId = memberDetail.GroupId,
 
                 };
 
  
                 _logger.LogInformation($"Attempting to Create an Account Record in Main Account Table");
-                var mainAccountResult = await _unitOfWork.MainAccountRepository.Create(account);
+                var mainAccountResult = await _unitOfWork.MemberAccountRepository.Create(account);
                 if (mainAccountResult.IsErrorOccured)
                 {
                     return mainAccountResult;
