@@ -23,7 +23,7 @@ public partial class MemberAccount
 
     public DateTime? ModifiedDate { get; set; }
 
-    public double? CurrentBalance { get; set; }
+    public double? TotalSharesContributed { get; set; }
 
     public double? TotalLoans { get; set; }
 

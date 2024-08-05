@@ -100,7 +100,7 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
                 var account = new GroupAccount
                 {
                     GroupAccountName = groupDetail.GroupName,
-                     CurrentBalance = 0,
+                     TotalSharesReceived = 0,
                     GroupAccountNumber = accountNumber,
                     CreatedDate = DateTime.Now,
                     CreatedBy = "LoggedInUser",

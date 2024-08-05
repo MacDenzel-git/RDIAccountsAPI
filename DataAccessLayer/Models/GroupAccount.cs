@@ -19,7 +19,7 @@ public partial class GroupAccount
 
     public DateTime? ModifiedDate { get; set; }
 
-    public double? CurrentBalance { get; set; }
+    public double? TotalSharesReceived { get; set; }
 
     public double? TotalLoans { get; set; }
 

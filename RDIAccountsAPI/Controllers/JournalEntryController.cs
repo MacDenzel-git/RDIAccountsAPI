@@ -26,7 +26,7 @@ namespace RDIAccountsAPI.Controllers
         [HttpPost("Create")]
         public async Task<IActionResult> Create(JournalEntryDTO journalEntry)
         {
-            var outputHandler = await _service.Create(journalEntry);
+            var outputHandler = await _service.ShareTransaction(journalEntry);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);

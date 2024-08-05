@@ -116,8 +116,7 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
             //Who is making the share 
             try
             {
-                var memberAccount = await _unitOfWork.MemberRepository.GetSingleItem(x => x.MemberId == entryDetails.MemberId);
-
+ 
                 _logger.LogInformation("Starting Share transaction entry");
 
                 
@@ -126,17 +125,63 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
                 _unitOfWork.BeginTransaction();
 
-                var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
-                var journalEntryResult = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+                    
+                  
+                  var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
+                //C
+                _logger.LogInformation("attempting Double entry: C");
 
+                mappedEntryDetails.DrCr = "C";
+                var outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+                _logger.LogInformation("Double entry C entered");
+
+                //D 
+                mappedEntryDetails.DrCr = "D";
+                mappedEntryDetails.JournalEntryTransId = 0;
+                outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+
+                _logger.LogInformation("Double entry D entered");
                 _logger.LogInformation($"Updated Shares Made");
-                _logger.LogInformation($"Getting Associated Member Account");
+                //
+                _logger.LogInformation($"Attempting to update Member Account with shares");
 
-              var memberDetails = await  _unitOfWork.MemberRepository.GetSingleItem(x => x.MemberId == entryDetails.MemberId);
-                _logger.LogInformation($"Updating Shares Contributed in Member Account");
-              //memberDetails.ba
+              var memberAccount = await  _unitOfWork.MemberAccountRepository.GetSingleItem(x => x.MemberAccountNumber == entryDetails.FromAccountNumber);
 
-                _logger.LogInformation($"Updating Main Account Balance");
+                memberAccount.TotalSharesContributed += entryDetails.AmountPaid;
+                outputHandler =  await  _unitOfWork.MemberAccountRepository.Update(memberAccount);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to update member Account {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+                _logger.LogInformation($"Updating Shares Contributed in Member Account - COMPLETED");
+
+                _logger.LogInformation($"Updating Group Account Balance - DONE");
+                var groupAccount = await _unitOfWork.GroupAccountRepository.GetSingleItem(x => x.GroupAccountNumber == entryDetails.ToAccountNumber);
+
+                groupAccount.TotalSharesReceived += entryDetails.AmountPaid;
+                outputHandler = await _unitOfWork.GroupAccountRepository.Update(groupAccount);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to update Group Account {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+
+                _logger.LogInformation($"Updating Group Account Balance - COMPLETED");
 
 
 
@@ -147,10 +192,13 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 _unitOfWork.RollbackTransaction();
-                throw;
+                _logger.LogError($"Rolling back ERROR: {ex}");
+
+                return new OutputHandler { IsErrorOccured = true, Message =ex.Message };
+
             }
 
         }

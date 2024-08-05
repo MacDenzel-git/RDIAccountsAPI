@@ -95,7 +95,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                 var account = new MemberAccount
                 {
                     MemberAccountName = memberDetail.MemberName,
-                     CurrentBalance = 0,
+                     TotalSharesContributed = 0,
                     MemberAccountNumber = accountNumber,
                     CreatedDate = DateTime.Now,
                     CreatedBy = "LoggedInUser",
