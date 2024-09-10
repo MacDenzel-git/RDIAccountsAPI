@@ -7,7 +7,8 @@ public partial class JournalEntry
 {
     public long JournalEntryTransId { get; set; }
 
-    public int MemberId { get; set; } 
+    public int MemberId { get; set; }
+
     public string ReceiptNo { get; set; } = null!;
 
     public string MemberName { get; set; } = null!;
@@ -57,6 +58,8 @@ public partial class JournalEntry
     public string? FromAccountNumber { get; set; }
 
     public string? ToAccountNumber { get; set; }
+
+    public string? TransactionIdentifier { get; set; }
 
     public virtual TransactionType TranscationType { get; set; } = null!;
 }

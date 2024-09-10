@@ -123,7 +123,32 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
 
                 }
 
-                _logger.LogInformation($"Attempting to Add Email to Mailing List Table");
+
+
+
+
+                _logger.LogInformation($"Attempting to Create Group Trans Record in Main Account Table");
+
+                var transAccounter = new TransIdCounter
+                {
+                    GroupId = groupDetail.GroupId,
+                    ShareTran = 1,
+                    LoanTran = 2
+                };
+                var transResult = await _unitOfWork.TransCounterRepository.Create(transAccounter);
+                if (transResult.IsErrorOccured)
+                {
+                    _logger.LogError($"Exited  Group Trans Record creation  with an Error {output.Message}");
+
+                    return transResult;
+                }
+                else
+                {
+                    _logger.LogInformation($"Main Account Created");
+
+                }
+
+
 
 
                 var mapped = new AutoMapper<GroupDetailDTO, GroupDetail>().MapToObject(groupDetail);
@@ -145,7 +170,7 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
 
                 _logger.LogInformation("Attempting to Commit Transaction Scope");
                 _unitOfWork.CommitTransaction();
-                _logger.LogInformation($"Transaction Scope Competed for Member {groupDetail.GroupName}-{accountNumber}");
+                _logger.LogInformation($"Transaction Scope Competed for Group {groupDetail.GroupName}-{accountNumber}");
 
                 return new OutputHandler { IsErrorOccured = false, Message = "Successfully Completed" };
 

@@ -19,6 +19,7 @@ namespace DataAccessLayer.UnitOfWork
         private GenericRepository<JournalEntry> journalEntryRepository;
         private GenericRepository<GroupDetail> groupDetailRepository;
         private GenericRepository<MailingList> mailingListRepository;
+        private GenericRepository<TransIdCounter> transCounterRepository;
         private IDbContextTransaction _transaction;
 
         public GenericRepository<MemberDetail> MemberRepository
@@ -30,6 +31,18 @@ namespace DataAccessLayer.UnitOfWork
                     this.memberRepository = new GenericRepository<MemberDetail>(context);
                 }
                 return memberRepository;
+            }
+        } 
+        
+        public GenericRepository<TransIdCounter> TransCounterRepository
+        {
+            get
+            {
+                if (this.transCounterRepository == null)
+                {
+                    this.transCounterRepository = new GenericRepository<TransIdCounter>(context);
+                }
+                return transCounterRepository;
             }
         } 
         

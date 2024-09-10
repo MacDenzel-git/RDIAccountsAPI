@@ -4,6 +4,8 @@ using AllinOne.DataHandlers.ErrorHandler;
  using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using DataAccessLayer.UnitOfWork;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.Logging;
 using RDIAccountsAPI;
 
@@ -143,6 +145,8 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
                 //D 
                 mappedEntryDetails.DrCr = "D";
+                mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
+                mappedEntryDetails.TransactionIdentifier = $"S{mappedEntryDetails.TransactionIdentifier}";
                 mappedEntryDetails.JournalEntryTransId = 0;
                 outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
                 if (outputHandler.IsErrorOccured)
@@ -203,13 +207,44 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
         }
 
+        private async Task<string> GetTranId(int groupId, string tranType)
+        {
+           var details = await _unitOfWork.TransCounterRepository.GetSingleItem(x => x.GroupId == groupId);
+            string tranIdentifier = "";
+            if (details == null) 
+            {
 
-        public async Task<OutputHandler> ShareTransactionApproval(JournalEntryDTO entryDetails)
+                if (tranType=="Share")
+                {
+                   var id = details.ShareTran = +details.ShareTran;
+                    tranIdentifier = id.ToString();
+
+                    return tranIdentifier;
+                }
+                else
+                {
+                   var id =  details.LoanTran =+ details.LoanTran;
+                    tranIdentifier = id.ToString();
+                    return tranIdentifier;
+
+                }
+
+
+            }
+
+            return "";
+        }
+
+        public async Task<OutputHandler> TransactionByMemberApproval(JournalEntryDTO entryDetails)
         {
             //Who is making the share 
             var memberAccount = await _unitOfWork.MemberRepository.GetSingleItem(x => x.MemberId == entryDetails.MemberId);
 
         
+         //update member balance 
+         //update group balance on loans and cash at hand
+         //Email members of Deposit 
+
               return new OutputHandler
             {
 
@@ -217,5 +252,41 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
         }
 
+        public Task<OutputHandler> TransactionSubmissionByMember(JournalEntryDTO journalEntry)
+        {
+            //Loan/share 
+           //Double entry in entered state 
+           ///add transaction and Keep in entered state 
+           ///
+            //No update of balances 
+            throw new NotImplementedException();
+        }
+
+        public Task<OutputHandler> LoanRequest(JournalEntryDTO journalEntry)
+        {
+            //double entry entered state 
+             
+            throw new NotImplementedException();
+        }
+
+        public Task<OutputHandler> LoanApproval(JournalEntryDTO journalEntry)
+        {
+            //change transaction to verified
+            //update member balances 
+            //update group balance 
+            //Email Members of loan
+            throw new NotImplementedException();
+        }
+
+        public Task<OutputHandler> LoanRepayments(JournalEntryDTO journalEntry)
+        {
+            //double entry 
+            throw new NotImplementedException();
+        }
+
+        public Task<OutputHandler> ShareTransactionSubmissionByMember(JournalEntryDTO journalEntry)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

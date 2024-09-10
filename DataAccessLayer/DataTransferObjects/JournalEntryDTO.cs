@@ -8,6 +8,7 @@ public partial class JournalEntryDTO
     public long JournalEntryTransId { get; set; }
 
     public int MemberId { get; set; } 
+    public int GroupId { get; set; } 
 
     public string ReceiptNo { get; set; } = null!;
 

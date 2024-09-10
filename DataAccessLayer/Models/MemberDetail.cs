@@ -11,7 +11,7 @@ public partial class MemberDetail
 
     public string PhoneNumber { get; set; } = null!;
 
-    public double Occupation { get; set; }
+    public string Occupation { get; set; } = null!;
 
     public string CreatedBy { get; set; } = null!;
 

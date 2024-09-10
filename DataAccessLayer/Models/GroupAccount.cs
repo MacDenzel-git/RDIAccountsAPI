@@ -29,5 +29,7 @@ public partial class GroupAccount
 
     public int Ggbid { get; set; }
 
+    public double? TotalLoanRepayments { get; set; }
+
     public virtual GroupGorveningBody Ggb { get; set; } = null!;
 }

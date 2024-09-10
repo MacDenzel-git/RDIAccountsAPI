@@ -35,6 +35,8 @@ public partial class EasyAccountDbContext : DbContext
 
     public virtual DbSet<MemberDetail> MemberDetails { get; set; }
 
+    public virtual DbSet<TransIdCounter> TransIdCounters { get; set; }
+
     public virtual DbSet<TransactionType> TransactionTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -103,7 +105,6 @@ public partial class EasyAccountDbContext : DbContext
                 .HasMaxLength(10)
                 .IsFixedLength();
             entity.Property(e => e.FromAccountNumber).HasMaxLength(50);
-            entity.Property(e => e.MemberId).HasMaxLength(50);
             entity.Property(e => e.PayMode).HasMaxLength(50);
             entity.Property(e => e.ProcessDateTime).HasColumnType("datetime");
             entity.Property(e => e.ProcessedStatus)
@@ -121,6 +122,7 @@ public partial class EasyAccountDbContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength();
             entity.Property(e => e.ToAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.TransactionIdentifier).HasMaxLength(50);
             entity.Property(e => e.TransactionStatus).HasMaxLength(50);
             entity.Property(e => e.TransactionTypeDescription).HasMaxLength(50);
 
@@ -180,12 +182,20 @@ public partial class EasyAccountDbContext : DbContext
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(400);
             entity.Property(e => e.MemberName).HasMaxLength(100);
+            entity.Property(e => e.Occupation).HasMaxLength(50);
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
 
             entity.HasOne(d => d.Group).WithMany(p => p.MemberDetails)
                 .HasForeignKey(d => d.GroupId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_MemberDetails_GroupDetails");
+        });
+
+        modelBuilder.Entity<TransIdCounter>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("TransIdCounter");
         });
 
         modelBuilder.Entity<TransactionType>(entity =>

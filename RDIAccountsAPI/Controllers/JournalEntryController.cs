@@ -32,6 +32,18 @@ namespace RDIAccountsAPI.Controllers
                 return BadRequest(outputHandler);
             }
             return Ok(outputHandler);
+        } 
+        
+        
+        [HttpPost("ShareTransaction")]
+        public async Task<IActionResult> ShareTransaction(JournalEntryDTO journalEntry)
+        {
+            var outputHandler = await _service.ShareTransaction(journalEntry);
+            if (outputHandler.IsErrorOccured)
+            {
+                return BadRequest(outputHandler);
+            }
+            return Ok(outputHandler);
         }
 
         /// <summary>
