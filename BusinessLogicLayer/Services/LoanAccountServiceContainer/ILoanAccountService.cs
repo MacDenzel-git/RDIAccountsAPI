@@ -13,6 +13,8 @@ namespace BusinessLogicLayer.Services.LoanAccountsServiceContainer
         Task<OutputHandler> Delete(int loanAccountId);
         Task<IEnumerable<LoanAccountDTO>> GetAllLoanAccounts();
         Task<LoanAccountDTO> GetLoanAccount(int loanAccountId);
+
+        Task<OutputHandler> ApproveLoan(RequestApprovalDTO loanAccountDTO);
     }
 }
 

@@ -11,5 +11,7 @@ public partial class GroupDetail
 
     public string GroupInitials { get; set; } = null!;
 
+    public double? InterestRate { get; set; }
+
     public virtual ICollection<MemberDetail> MemberDetails { get; set; } = new List<MemberDetail>();
 }

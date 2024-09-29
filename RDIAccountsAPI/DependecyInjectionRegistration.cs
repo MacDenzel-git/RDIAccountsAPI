@@ -1,6 +1,7 @@
 ﻿
 
 
+using BusinessLogicLayer.AuditTrailServiceContainer;
 using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.InterestAccountsServiceContainer;
 using BusinessLogicLayer.JournalEntrysServiceContainer;
@@ -29,6 +30,7 @@ namespace RDIAccountsAPI
 		{
 			serviceCollection.AddScoped<GenericRepository<InterestAccount>>();
 			serviceCollection.AddScoped<GenericRepository<GroupDetail>>();
+			serviceCollection.AddScoped<GenericRepository<AuditTrail>>();
 			serviceCollection.AddScoped<GenericRepository<JournalEntry>>();
 			serviceCollection.AddScoped<GenericRepository<LoanAccount>>();
 			serviceCollection.AddScoped<GenericRepository<LoanConfiguration>>();
@@ -43,6 +45,7 @@ namespace RDIAccountsAPI
 		public static IServiceCollection AddServices(this IServiceCollection service)
 		{
 			service.AddScoped<IGroupDetailService, GroupDetailService>();
+			service.AddScoped<IAuditTrailService, AuditTrailService>();
 			service.AddScoped<ILoanAccountService, LoanAccountService>();
 			service.AddScoped<IMemberAccountService, MemberAccountService>();
 			service.AddScoped<IGroupAccountService, GroupAccountService>();

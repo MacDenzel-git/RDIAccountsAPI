@@ -26,4 +26,6 @@ public partial class LoanConfiguration
     public int InterestAccumulativeDays { get; set; }
 
     public bool IsComputedDefaultInterest { get; set; }
+
+    public int? GroupId { get; set; }
 }

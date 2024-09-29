@@ -19,11 +19,13 @@ public partial class LoanConfiguration
 
     public DateTime? ModifiedDate { get; set; }
 
-    public string RepaymentPeriod { get; set; } = null!;
+    public int RepaymentPeriod { get; set; }
 
     public int DefaultInterest { get; set; }
 
     public int InterestAccumulativeDays { get; set; }
 
     public bool IsComputedDefaultInterest { get; set; }
+
+    public int? GroupId { get; set; }
 }

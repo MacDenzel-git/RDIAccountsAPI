@@ -15,6 +15,7 @@ namespace DataAccessLayer.UnitOfWork
         private EasyAccountDbContext context = new EasyAccountDbContext();
         private GenericRepository<MemberDetail> memberRepository;
         private GenericRepository<MemberAccount> memberAccountRepository;
+        private GenericRepository<LoanAccount> loanAccountRepository;
         private GenericRepository<GroupAccount> groupAccountRepository;
         private GenericRepository<JournalEntry> journalEntryRepository;
         private GenericRepository<GroupDetail> groupDetailRepository;
@@ -32,8 +33,23 @@ namespace DataAccessLayer.UnitOfWork
                 }
                 return memberRepository;
             }
-        } 
-        
+        }
+
+
+
+        public GenericRepository<LoanAccount> LoanAccountRepository
+        {
+            get
+            {
+                if (this.loanAccountRepository == null)
+                {
+                    this.loanAccountRepository = new GenericRepository<LoanAccount>(context);
+                }
+                return loanAccountRepository;
+            }
+        }
+
+
         public GenericRepository<TransIdCounter> TransCounterRepository
         {
             get

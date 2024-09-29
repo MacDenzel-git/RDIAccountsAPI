@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DataAccessLayer.Models;
+namespace RDIAccountsAPI.Models;
 
-public partial class GroupAccountDTO
+public partial class GroupAccount
 {
     public int GroupAccountId { get; set; }
 

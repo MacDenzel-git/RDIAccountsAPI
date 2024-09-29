@@ -4,6 +4,7 @@ using AllinOne.DataHandlers.ErrorHandler;
  using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using DataAccessLayer.UnitOfWork;
+using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.Logging;
@@ -118,53 +119,30 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
             //Who is making the share 
             try
             {
- 
+
                 _logger.LogInformation("Starting Share transaction entry");
-
-                
-
-                
-
                 _unitOfWork.BeginTransaction();
 
-                    
+                var journalEntryOutput =  await JournalEntryHandler(entryDetails);
+                if (journalEntryOutput.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to complete Journal Entry{journalEntryOutput.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return journalEntryOutput;
+                }
                   
-                  var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
-                //C
-                _logger.LogInformation("attempting Double entry: C");
-
-                mappedEntryDetails.DrCr = "C";
-                var outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-                if (outputHandler.IsErrorOccured)
-                {
-                    _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
-                    _unitOfWork.RollbackTransaction();
-                    return outputHandler;
-                }
-                _logger.LogInformation("Double entry C entered");
-
-                //D 
-                mappedEntryDetails.DrCr = "D";
-                mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
-                mappedEntryDetails.TransactionIdentifier = $"S{mappedEntryDetails.TransactionIdentifier}";
-                mappedEntryDetails.JournalEntryTransId = 0;
-                outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-                if (outputHandler.IsErrorOccured)
-                {
-                    _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
-                    _unitOfWork.RollbackTransaction();
-                    return outputHandler;
-                }
-
-                _logger.LogInformation("Double entry D entered");
-                _logger.LogInformation($"Updated Shares Made");
-                //
+                  _logger.LogInformation("Journal Entry Process Completed");
                 _logger.LogInformation($"Attempting to update Member Account with shares");
 
-              var memberAccount = await  _unitOfWork.MemberAccountRepository.GetSingleItem(x => x.MemberAccountNumber == entryDetails.FromAccountNumber);
+                var memberAccount = await _unitOfWork.MemberAccountRepository.GetSingleItem(x => x.MemberAccountNumber == entryDetails.FromAccountNumber);
 
                 memberAccount.TotalSharesContributed += entryDetails.AmountPaid;
-                outputHandler =  await  _unitOfWork.MemberAccountRepository.Update(memberAccount);
+
+                //calculate interest
+                //get interest from DB group details table
+                //memberAccount.TotalInterestAccumulated = entryDetails.AmountPaid * entryDetails.Interest;
+
+               var outputHandler = await _unitOfWork.MemberAccountRepository.Update(memberAccount);
                 if (outputHandler.IsErrorOccured)
                 {
                     _logger.LogInformation($"Failed to update member Account {outputHandler.Message}");
@@ -176,7 +154,12 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
                 _logger.LogInformation($"Updating Group Account Balance - DONE");
                 var groupAccount = await _unitOfWork.GroupAccountRepository.GetSingleItem(x => x.GroupAccountNumber == entryDetails.ToAccountNumber);
 
+                //Add the amount to the avaialable balance
+                groupAccount.AvailableBalance += entryDetails.AmountPaid;
+
+                //add to the total shares
                 groupAccount.TotalSharesReceived += entryDetails.AmountPaid;
+
                 outputHandler = await _unitOfWork.GroupAccountRepository.Update(groupAccount);
                 if (outputHandler.IsErrorOccured)
                 {
@@ -207,23 +190,156 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
         }
 
+        public async Task<OutputHandler> JournalEntryHandler(JournalEntryDTO entryDetails )
+        {
+            OutputHandler outputHandler = new OutputHandler  { };
+            var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
+            mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
+            mappedEntryDetails.TransactionIdentifier = $"SH{mappedEntryDetails.TransactionIdentifier}";
+            //C
+            _logger.LogInformation("attempting Double entry: C");
+
+            mappedEntryDetails.DrCr = "C";
+            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+            if (outputHandler.IsErrorOccured)
+            {
+                _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
+                 return outputHandler;
+            }
+            _logger.LogInformation("Double entry C entered");
+
+            //D 
+            mappedEntryDetails.DrCr = "D";
+
+            mappedEntryDetails.JournalEntryTransId = 0; //reset tran id for next transaction
+            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+            if (outputHandler.IsErrorOccured)
+            {
+                _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
+                 return outputHandler;
+            }
+
+            _logger.LogInformation("Double entry D entered");
+            _logger.LogInformation($"Journal Entry Transaction Completed Successfully");
+            return new OutputHandler {IsErrorOccured = false, Message = "Transaction Successful" };
+        }
+
+         
+
+        public async Task<OutputHandler> LoanRepaymentTransaction(JournalEntryDTO entryDetails)
+        {
+            //Who is making the share 
+            try
+            {
+
+                _logger.LogInformation("Starting Loan transaction entry");
+
+
+
+
+
+                _unitOfWork.BeginTransaction();
+
+
+
+                var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
+                //C
+                _logger.LogInformation("attempting Double entry: C");
+
+                mappedEntryDetails.DrCr = "C";
+                var outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+                _logger.LogInformation("Double entry C entered");
+
+                //D 
+                mappedEntryDetails.DrCr = "D";
+                mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
+                mappedEntryDetails.TransactionIdentifier = $"L{mappedEntryDetails.TransactionIdentifier}";
+                mappedEntryDetails.JournalEntryTransId = 0;
+                outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+
+                _logger.LogInformation("Double entry D entered");
+                _logger.LogInformation($"Updated Shares Made");
+                //
+                _logger.LogInformation($"Attempting to update Member Account with shares");
+
+                var memberAccount = await _unitOfWork.MemberAccountRepository.GetSingleItem(x => x.MemberAccountNumber == entryDetails.FromAccountNumber);
+
+                memberAccount.CurrentLoanBalance -= entryDetails.AmountPaid;
+                outputHandler = await _unitOfWork.MemberAccountRepository.Update(memberAccount);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to update member Account {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+                _logger.LogInformation($"Updating Loan Contributed in Member Account - COMPLETED");
+
+                _logger.LogInformation($"Updating Group Account Balance - DONE");
+                var groupAccount = await _unitOfWork.GroupAccountRepository.GetSingleItem(x => x.GroupAccountNumber == entryDetails.ToAccountNumber);
+
+                groupAccount.TotalLoanRepayments += entryDetails.AmountPaid;
+
+                //Add the amount to the avaialable balance
+                groupAccount.AvailableBalance += entryDetails.AmountPaid;
+                outputHandler = await _unitOfWork.GroupAccountRepository.Update(groupAccount);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to update Group Account {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+
+                _logger.LogInformation($"Updating Group Account Balance - COMPLETED");
+
+
+
+
+                _unitOfWork.CommitTransaction();
+                return new OutputHandler
+                {
+
+                };
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.RollbackTransaction();
+                _logger.LogError($"Rolling back ERROR: {ex}");
+
+                return new OutputHandler { IsErrorOccured = true, Message = ex.Message };
+
+            }
+
+        }
+
+
         private async Task<string> GetTranId(int groupId, string tranType)
         {
            var details = await _unitOfWork.TransCounterRepository.GetSingleItem(x => x.GroupId == groupId);
             string tranIdentifier = "";
-            if (details == null) 
+            if (details != null) 
             {
 
-                if (tranType=="Share")
+                if (tranType=="share")
                 {
-                   var id = details.ShareTran = +details.ShareTran;
+                    var id = details.ShareTran = +details.ShareTran;
                     tranIdentifier = id.ToString();
-
                     return tranIdentifier;
                 }
                 else
                 {
-                   var id =  details.LoanTran =+ details.LoanTran;
+                    var id =  details.LoanTran =+ details.LoanTran;
                     tranIdentifier = id.ToString();
                     return tranIdentifier;
 
@@ -264,7 +380,8 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
         public Task<OutputHandler> LoanRequest(JournalEntryDTO journalEntry)
         {
-            //double entry entered state 
+       
+
              
             throw new NotImplementedException();
         }
@@ -284,6 +401,120 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
             throw new NotImplementedException();
         }
 
+
+        public async Task<OutputHandler> LoanRepayment(JournalEntryDTO entryDetails)
+        {
+            //Who is making the share 
+            try
+            {
+
+                _logger.LogInformation("Starting Loan Repayment Transaction transaction entry");
+                _unitOfWork.BeginTransaction();
+
+                var journalEntryOutput = await JournalEntryHandler(entryDetails);
+                if (journalEntryOutput.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to complete Journal Entry{journalEntryOutput.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return journalEntryOutput;
+                }
+
+                _logger.LogInformation("Journal Entry Process Completed");
+                _logger.LogInformation($"Attempting to update Member Account with shares");
+
+                var memberAccount = await _unitOfWork.MemberAccountRepository.GetSingleItem(x => x.MemberAccountNumber == entryDetails.FromAccountNumber);
+
+                memberAccount.TotalSharesContributed += entryDetails.AmountPaid;
+
+                //calculate interest
+                //get interest from DB group details table
+                //memberAccount.TotalInterestAccumulated = entryDetails.AmountPaid * entryDetails.Interest;
+
+                var outputHandler = await _unitOfWork.MemberAccountRepository.Update(memberAccount);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to update member Account {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+                _logger.LogInformation($"Updating Shares Contributed in Member Account - COMPLETED");
+
+                _logger.LogInformation($"Updating Group Account Balance - DONE");
+                var groupAccount = await _unitOfWork.GroupAccountRepository.GetSingleItem(x => x.GroupAccountNumber == entryDetails.ToAccountNumber);
+
+                //Add the amount to the avaialable balance
+                groupAccount.AvailableBalance += entryDetails.AmountPaid;
+
+                //add to the total shares
+                groupAccount.TotalSharesReceived += entryDetails.AmountPaid;
+
+                outputHandler = await _unitOfWork.GroupAccountRepository.Update(groupAccount);
+                if (outputHandler.IsErrorOccured)
+                {
+                    _logger.LogInformation($"Failed to update Group Account {outputHandler.Message}");
+                    _unitOfWork.RollbackTransaction();
+                    return outputHandler;
+                }
+
+                _logger.LogInformation($"Updating Group Account Balance - COMPLETED");
+
+
+
+
+                _unitOfWork.CommitTransaction();
+                return new OutputHandler
+                {
+
+                };
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.RollbackTransaction();
+                _logger.LogError($"Rolling back ERROR: {ex}");
+
+                return new OutputHandler { IsErrorOccured = true, Message = ex.Message };
+
+            }
+
+        }
+
+
+        public async Task<OutputHandler> LoanRepaymentJournalEntryHandler(JournalEntryDTO entryDetails)
+        {
+            OutputHandler outputHandler = new OutputHandler { };
+            var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
+            mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
+            mappedEntryDetails.TransactionIdentifier = $"LR{mappedEntryDetails.TransactionIdentifier}";
+            //C
+            _logger.LogInformation("attempting Double entry: C");
+
+
+            _logger.LogInformation("Debit Member");
+            mappedEntryDetails.DrCr = "D";
+            mappedEntryDetails.FromAccountNumber = entryDetails.FromAccountNumber;
+
+            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+            if (outputHandler.IsErrorOccured)
+            {
+                _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
+                return outputHandler;
+            }
+            _logger.LogInformation("Double entry D entered");
+
+            //D 
+            mappedEntryDetails.DrCr = "C";
+            mappedEntryDetails.JournalEntryTransId = 0; //reset tran id for next transaction
+            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+            if (outputHandler.IsErrorOccured)
+            {
+                _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
+                return outputHandler;
+            }
+
+            _logger.LogInformation("Double entry D entered");
+            _logger.LogInformation($"Journal Entry Transaction Completed Successfully");
+            return new OutputHandler { IsErrorOccured = false, Message = "Transaction Successful" };
+        }
         public Task<OutputHandler> ShareTransactionSubmissionByMember(JournalEntryDTO journalEntry)
         {
             throw new NotImplementedException();

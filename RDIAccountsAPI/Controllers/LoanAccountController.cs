@@ -106,5 +106,21 @@ namespace RDIAccountsAPI.Controllers
 
         }
 
+
+        /// <summary>
+        /// This is the API for creating client Type
+        /// </summary>
+        /// <param name="requestApprovalDTO"></param>
+        /// <returns></returns>
+        [HttpPost("ApproveLoan")]
+        public async Task<IActionResult> ApproveLoan(RequestApprovalDTO requestApprovalDTO)
+        {
+            var outputHandler = await _service.ApproveLoan(requestApprovalDTO);
+            if (outputHandler.IsErrorOccured)
+            {
+                return BadRequest(outputHandler);
+            }
+            return Ok(outputHandler);
+        }
     }
 }

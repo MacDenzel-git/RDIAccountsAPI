@@ -101,11 +101,16 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
                 {
                     GroupAccountName = groupDetail.GroupName,
                      TotalSharesReceived = 0,
+                    TotalBorrowedAmount = 0,
+                    InterestExpected = 0,
+                    ActualInterestReceived = 0,
+                    TotalLoanRepayments = 0,
+                    AvailableBalance = 0,
                     GroupAccountNumber = accountNumber,
                     CreatedDate = DateTime.Now,
                     CreatedBy = "LoggedInUser",
                     Ggbid = 0, //insert Ge=
-
+                    GroupId = groupDetail.GroupId,
                 };
 
 
@@ -204,7 +209,7 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
                 string groupId = "";
                 if (groupDetail.GroupId < 10)
                 {
-                    groupId = $"0{groupId}";
+                    groupId = $"0{groupDetail.GroupId}";
                 }
                 else
                 {

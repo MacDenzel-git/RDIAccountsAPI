@@ -96,10 +96,14 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                 {
                     MemberAccountName = memberDetail.MemberName,
                      TotalSharesContributed = 0,
+                    CurrentLoanBalance = 0,
+                    TotalLoans = 0,
+                    TotalInterestAccumulated = 0,
                     MemberAccountNumber = accountNumber,
                     CreatedDate = DateTime.Now,
                     CreatedBy = "LoggedInUser",
                     GroupId = memberDetail.GroupId,
+                    MemberId = memberDetail.MemberId,
 
                 };
 
@@ -323,7 +327,7 @@ namespace BusinessLogicLayer.Services.MemberDetailServiceContainer
                     string memberId = "";
                     if (memberDetail.MemberId < 10)
                     {
-                        memberId = $"0{memberId}";
+                        memberId = $"0{memberDetail.MemberId}";
                     }
                     else
                     {

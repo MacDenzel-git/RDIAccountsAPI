@@ -5,16 +5,17 @@ namespace DataAccessLayer.DataTransferObjects;
 
 public partial class JournalEntryDTO
 {
+    public int GroupId { get; set; }
+
     public long JournalEntryTransId { get; set; }
 
-    public int MemberId { get; set; } 
-    public int GroupId { get; set; } 
+    public int MemberId { get; set; }
 
     public string ReceiptNo { get; set; } = null!;
 
     public string MemberName { get; set; } = null!;
 
-    public string? ChqNo { get; set; }
+    public string? ChequeNumber { get; set; }
 
     public double AmountPaid { get; set; }
 
@@ -34,7 +35,7 @@ public partial class JournalEntryDTO
 
     public int TranscationTypeId { get; set; }
 
-    public string LoanBalance { get; set; } = null!;
+    public double LoanBalance { get; set; }
 
     public string? TranscationDetails { get; set; }
 
@@ -50,8 +51,6 @@ public partial class JournalEntryDTO
 
     public DateTime RequestedDate { get; set; }
 
-    public double InterestCalculated { get; set; }
-
     public string TransactionTypeDescription { get; set; } = null!;
 
     public string? TransactionStatus { get; set; }
@@ -60,4 +59,17 @@ public partial class JournalEntryDTO
 
     public string? ToAccountNumber { get; set; }
 
+    public string? TransactionIdentifier { get; set; }
+
+    public string? MemberBankAccount { get; set; }
+
+    public string? MemberBankName { get; set; }
+
+    public DateTime? DateLoanSent { get; set; }
+
+    public string? ModifiedBy { get; set; }
+
+    public DateTime? DateModified { get; set; }
+
+    public string? BankTransferTransId { get; set; }
 }

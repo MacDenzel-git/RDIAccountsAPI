@@ -21,7 +21,7 @@ public partial class GroupAccount
 
     public double? TotalSharesReceived { get; set; }
 
-    public double? TotalLoans { get; set; }
+    public double? TotalBorrowedAmount { get; set; }
 
     public double? InterestExpected { get; set; }
 
@@ -30,6 +30,12 @@ public partial class GroupAccount
     public int Ggbid { get; set; }
 
     public double? TotalLoanRepayments { get; set; }
+
+    public double? AvailableBalance { get; set; }
+
+    public int? GroupId { get; set; }
+
+    public double? OutStandingLoanAmount { get; set; }
 
     public virtual GroupGorveningBody Ggb { get; set; } = null!;
 }
