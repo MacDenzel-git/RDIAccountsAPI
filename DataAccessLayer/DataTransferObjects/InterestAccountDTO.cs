@@ -5,17 +5,15 @@ namespace DataAccessLayer.DataTransferObjects;
 
 public partial class InterestAccountDTO
 {
-    public long InterestTransId { get; set; }
+    public long InterestAccountId { get; set; }
 
-    public string InterestTitle { get; set; } = null!;
+    public string InterestAccountName { get; set; } = null!;
 
-    public string LoanAccountId { get; set; } = null!;
+    public int GroupId { get; set; } 
 
-    public double Amount { get; set; }
+    public double InterestAmountActualCollected { get; set; }
 
-    public string MemberAccountNumber { get; set; } = null!;
+    public double InterestAmountExpected { get; set; }
 
-    public string Rate { get; set; } = null!;
-
-    public double InitialAmount { get; set; }
+    public string InterestAccountNumber { get; set; } = null!;
 }

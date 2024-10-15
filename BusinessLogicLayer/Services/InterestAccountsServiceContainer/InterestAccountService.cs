@@ -81,13 +81,13 @@ namespace BusinessLogicLayer.Services.InterestAccountServiceContainer
             try
             {
                 //  check record already exist to avoid duplicates
-                bool isExist = await _service.AnyAsync(x => x.InterestTitle == interestAccount.InterestTitle);
+                bool isExist = await _service.AnyAsync(x => x.InterestAccountNumber == interestAccount.InterestAccountNumber);
                 if (isExist)
                 {
                     return new OutputHandler
                     {
                         IsErrorOccured = true,
-                        Message = StandardMessages.GetDuplicateMessage(interestAccount.InterestTitle)
+                        Message = StandardMessages.GetDuplicateMessage(interestAccount.InterestAccountNumber)
 
                     };
                 }

@@ -12,14 +12,14 @@ namespace BusinessLogicLayer.JournalEntrysServiceContainer
         Task<OutputHandler> ShareTransaction(JournalEntryDTO journalEntry);
         Task<OutputHandler> ShareTransactionSubmissionByMember(JournalEntryDTO journalEntry);
       
-        Task<OutputHandler> LoanRepayments(JournalEntryDTO journalEntry);
+        Task<OutputHandler> LoanRepayment(JournalEntryDTO journalEntry);
 
         Task<OutputHandler> Update(JournalEntryDTO journalEntry);
         Task<OutputHandler> Delete(int journalEntryId);
         Task<IEnumerable<JournalEntryDTO>> GetAllJournalEntrys();
         Task<JournalEntryDTO> GetJournalEntry(int journalEntryId);
 
-        Task<OutputHandler> JournalEntryHandler(JournalEntryDTO entryDetails);
+          
     }
 }
 

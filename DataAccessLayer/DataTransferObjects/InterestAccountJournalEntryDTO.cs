@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DataAccessLayer.DataTransferObjects;
+namespace DataAccessLayer.Models;
 
-public partial class JournalEntryDTO
+public partial class InterestAccountJournalEntryDTO
 {
-    public int GroupId { get; set; }
-
-    public long JournalEntryTransId { get; set; }
+    public long InterestAccountJournalEntryTransId { get; set; }
 
     public int MemberId { get; set; }
 
@@ -76,4 +74,5 @@ public partial class JournalEntryDTO
     public bool? IsShareTransaction { get; set; }
 
     public string? AssociatedLoanAccountNumber { get; set; }
-}
+
+ }

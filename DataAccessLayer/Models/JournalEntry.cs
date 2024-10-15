@@ -71,5 +71,9 @@ public partial class JournalEntry
 
     public string? BankTransferTransId { get; set; }
 
+    public bool? IsShareTransaction { get; set; }
+
+    public string? AssociatedLoanAccountNumber { get; set; }
+
     public virtual TransactionType TranscationType { get; set; } = null!;
 }

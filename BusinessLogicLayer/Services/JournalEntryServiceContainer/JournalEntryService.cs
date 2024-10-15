@@ -14,15 +14,17 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 {
     public class JournalEntryService : IJournalEntryService
     {
+        private IJournalEntryProcessor _journalEntryProcessor;
 
         private UnityOfWork _unitOfWork = new UnityOfWork();
 
         private readonly GenericRepository<JournalEntry> _service;
         private ILogger<JournalEntryService> _logger;
-        public JournalEntryService(GenericRepository<JournalEntry> service, ILogger<JournalEntryService> logger)
+        public JournalEntryService(GenericRepository<JournalEntry> service, ILogger<JournalEntryService> logger, IJournalEntryProcessor journalEntryProcessor)
         {
             _service = service;
             _logger = logger;
+            _journalEntryProcessor = journalEntryProcessor;
         }
         public async Task<OutputHandler> Create(JournalEntryDTO journalEntry)
         {
@@ -123,7 +125,7 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
                 _logger.LogInformation("Starting Share transaction entry");
                 _unitOfWork.BeginTransaction();
 
-                var journalEntryOutput =  await JournalEntryHandler(entryDetails);
+                var journalEntryOutput =  await _journalEntryProcessor.MemberShareJournalEntries(entryDetails);
                 if (journalEntryOutput.IsErrorOccured)
                 {
                     _logger.LogInformation($"Failed to complete Journal Entry{journalEntryOutput.Message}");
@@ -190,166 +192,111 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
         }
 
-        public async Task<OutputHandler> JournalEntryHandler(JournalEntryDTO entryDetails )
-        {
-            OutputHandler outputHandler = new OutputHandler  { };
-            var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
-            mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
-            mappedEntryDetails.TransactionIdentifier = $"SH{mappedEntryDetails.TransactionIdentifier}";
-            //C
-            _logger.LogInformation("attempting Double entry: C");
+       
 
-            mappedEntryDetails.DrCr = "C";
-            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-            if (outputHandler.IsErrorOccured)
-            {
-                _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
-                 return outputHandler;
-            }
-            _logger.LogInformation("Double entry C entered");
 
-            //D 
-            mappedEntryDetails.DrCr = "D";
+        
 
-            mappedEntryDetails.JournalEntryTransId = 0; //reset tran id for next transaction
-            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-            if (outputHandler.IsErrorOccured)
-            {
-                _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
-                 return outputHandler;
-            }
 
-            _logger.LogInformation("Double entry D entered");
-            _logger.LogInformation($"Journal Entry Transaction Completed Successfully");
-            return new OutputHandler {IsErrorOccured = false, Message = "Transaction Successful" };
-        }
+        //public async Task<OutputHandler> LoanRepaymentTransaction(JournalEntryDTO entryDetails)
+        //{
+        //    //Who is making the share 
+        //    try
+        //    {
 
-         
-
-        public async Task<OutputHandler> LoanRepaymentTransaction(JournalEntryDTO entryDetails)
-        {
-            //Who is making the share 
-            try
-            {
-
-                _logger.LogInformation("Starting Loan transaction entry");
+        //        _logger.LogInformation("Starting Loan transaction entry");
 
 
 
 
 
-                _unitOfWork.BeginTransaction();
+        //        _unitOfWork.BeginTransaction();
 
 
 
-                var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
-                //C
-                _logger.LogInformation("attempting Double entry: C");
+        //        var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
+        //        //C
+        //        _logger.LogInformation("attempting Double entry: C");
 
-                mappedEntryDetails.DrCr = "C";
-                var outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-                if (outputHandler.IsErrorOccured)
-                {
-                    _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
-                    _unitOfWork.RollbackTransaction();
-                    return outputHandler;
-                }
-                _logger.LogInformation("Double entry C entered");
+        //        mappedEntryDetails.DrCr = "C";
+        //        var outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+        //        if (outputHandler.IsErrorOccured)
+        //        {
+        //            _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
+        //            _unitOfWork.RollbackTransaction();
+        //            return outputHandler;
+        //        }
+        //        _logger.LogInformation("Double entry C entered");
 
-                //D 
-                mappedEntryDetails.DrCr = "D";
-                mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
-                mappedEntryDetails.TransactionIdentifier = $"L{mappedEntryDetails.TransactionIdentifier}";
-                mappedEntryDetails.JournalEntryTransId = 0;
-                outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-                if (outputHandler.IsErrorOccured)
-                {
-                    _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
-                    _unitOfWork.RollbackTransaction();
-                    return outputHandler;
-                }
+        //        //D 
+        //        mappedEntryDetails.DrCr = "D";
+        //        mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
+        //        mappedEntryDetails.TransactionIdentifier = $"L{mappedEntryDetails.TransactionIdentifier}";
+        //        mappedEntryDetails.JournalEntryTransId = 0;
+        //        outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
+        //        if (outputHandler.IsErrorOccured)
+        //        {
+        //            _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
+        //            _unitOfWork.RollbackTransaction();
+        //            return outputHandler;
+        //        }
 
-                _logger.LogInformation("Double entry D entered");
-                _logger.LogInformation($"Updated Shares Made");
-                //
-                _logger.LogInformation($"Attempting to update Member Account with shares");
+        //        _logger.LogInformation("Double entry D entered");
+        //        _logger.LogInformation($"Updated Shares Made");
+        //        //
+        //        _logger.LogInformation($"Attempting to update Member Account with shares");
 
-                var memberAccount = await _unitOfWork.MemberAccountRepository.GetSingleItem(x => x.MemberAccountNumber == entryDetails.FromAccountNumber);
+        //        var memberAccount = await _unitOfWork.MemberAccountRepository.GetSingleItem(x => x.MemberAccountNumber == entryDetails.FromAccountNumber);
 
-                memberAccount.CurrentLoanBalance -= entryDetails.AmountPaid;
-                outputHandler = await _unitOfWork.MemberAccountRepository.Update(memberAccount);
-                if (outputHandler.IsErrorOccured)
-                {
-                    _logger.LogInformation($"Failed to update member Account {outputHandler.Message}");
-                    _unitOfWork.RollbackTransaction();
-                    return outputHandler;
-                }
-                _logger.LogInformation($"Updating Loan Contributed in Member Account - COMPLETED");
+        //        memberAccount.CurrentLoanBalance -= entryDetails.AmountPaid;
+        //        outputHandler = await _unitOfWork.MemberAccountRepository.Update(memberAccount);
+        //        if (outputHandler.IsErrorOccured)
+        //        {
+        //            _logger.LogInformation($"Failed to update member Account {outputHandler.Message}");
+        //            _unitOfWork.RollbackTransaction();
+        //            return outputHandler;
+        //        }
+        //        _logger.LogInformation($"Updating Loan Contributed in Member Account - COMPLETED");
 
-                _logger.LogInformation($"Updating Group Account Balance - DONE");
-                var groupAccount = await _unitOfWork.GroupAccountRepository.GetSingleItem(x => x.GroupAccountNumber == entryDetails.ToAccountNumber);
+        //        _logger.LogInformation($"Updating Group Account Balance - DONE");
+        //        var groupAccount = await _unitOfWork.GroupAccountRepository.GetSingleItem(x => x.GroupAccountNumber == entryDetails.ToAccountNumber);
 
-                groupAccount.TotalLoanRepayments += entryDetails.AmountPaid;
+        //        groupAccount.TotalLoanRepayments += entryDetails.AmountPaid;
 
-                //Add the amount to the avaialable balance
-                groupAccount.AvailableBalance += entryDetails.AmountPaid;
-                outputHandler = await _unitOfWork.GroupAccountRepository.Update(groupAccount);
-                if (outputHandler.IsErrorOccured)
-                {
-                    _logger.LogInformation($"Failed to update Group Account {outputHandler.Message}");
-                    _unitOfWork.RollbackTransaction();
-                    return outputHandler;
-                }
+        //        //Add the amount to the avaialable balance
+        //        groupAccount.AvailableBalance += entryDetails.AmountPaid;
+        //        outputHandler = await _unitOfWork.GroupAccountRepository.Update(groupAccount);
+        //        if (outputHandler.IsErrorOccured)
+        //        {
+        //            _logger.LogInformation($"Failed to update Group Account {outputHandler.Message}");
+        //            _unitOfWork.RollbackTransaction();
+        //            return outputHandler;
+        //        }
 
-                _logger.LogInformation($"Updating Group Account Balance - COMPLETED");
-
-
+        //        _logger.LogInformation($"Updating Group Account Balance - COMPLETED");
 
 
-                _unitOfWork.CommitTransaction();
-                return new OutputHandler
-                {
-
-                };
-            }
-            catch (Exception ex)
-            {
-                _unitOfWork.RollbackTransaction();
-                _logger.LogError($"Rolling back ERROR: {ex}");
-
-                return new OutputHandler { IsErrorOccured = true, Message = ex.Message };
-
-            }
-
-        }
 
 
-        private async Task<string> GetTranId(int groupId, string tranType)
-        {
-           var details = await _unitOfWork.TransCounterRepository.GetSingleItem(x => x.GroupId == groupId);
-            string tranIdentifier = "";
-            if (details != null) 
-            {
+        //        _unitOfWork.CommitTransaction();
+        //        return new OutputHandler
+        //        {
 
-                if (tranType=="share")
-                {
-                    var id = details.ShareTran = +details.ShareTran;
-                    tranIdentifier = id.ToString();
-                    return tranIdentifier;
-                }
-                else
-                {
-                    var id =  details.LoanTran =+ details.LoanTran;
-                    tranIdentifier = id.ToString();
-                    return tranIdentifier;
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _unitOfWork.RollbackTransaction();
+        //        _logger.LogError($"Rolling back ERROR: {ex}");
 
-                }
+        //        return new OutputHandler { IsErrorOccured = true, Message = ex.Message };
+
+        //    }
+
+        //}
 
 
-            }
-
-            return "";
-        }
+ 
 
         public async Task<OutputHandler> TransactionByMemberApproval(JournalEntryDTO entryDetails)
         {
@@ -378,6 +325,12 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
             throw new NotImplementedException();
         }
 
+
+        public Task<OutputHandler> ShareTransactionSubmissionByMember(JournalEntryDTO journalEntry)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<OutputHandler> LoanRequest(JournalEntryDTO journalEntry)
         {
        
@@ -395,12 +348,7 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
             throw new NotImplementedException();
         }
 
-        public Task<OutputHandler> LoanRepayments(JournalEntryDTO journalEntry)
-        {
-            //double entry 
-            throw new NotImplementedException();
-        }
-
+      
 
         public async Task<OutputHandler> LoanRepayment(JournalEntryDTO entryDetails)
         {
@@ -411,7 +359,7 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
                 _logger.LogInformation("Starting Loan Repayment Transaction transaction entry");
                 _unitOfWork.BeginTransaction();
 
-                var journalEntryOutput = await JournalEntryHandler(entryDetails);
+                var journalEntryOutput = await _journalEntryProcessor.LoanRepaymentEntries(entryDetails);
                 if (journalEntryOutput.IsErrorOccured)
                 {
                     _logger.LogInformation($"Failed to complete Journal Entry{journalEntryOutput.Message}");
@@ -478,46 +426,7 @@ namespace BusinessLogicLayer.Services.JournalEntryServiceContainer
 
         }
 
-
-        public async Task<OutputHandler> LoanRepaymentJournalEntryHandler(JournalEntryDTO entryDetails)
-        {
-            OutputHandler outputHandler = new OutputHandler { };
-            var mappedEntryDetails = new AutoMapper<JournalEntryDTO, JournalEntry>().MapToObject(entryDetails);
-            mappedEntryDetails.TransactionIdentifier = await GetTranId(entryDetails.GroupId, "share");
-            mappedEntryDetails.TransactionIdentifier = $"LR{mappedEntryDetails.TransactionIdentifier}";
-            //C
-            _logger.LogInformation("attempting Double entry: C");
-
-
-            _logger.LogInformation("Debit Member");
-            mappedEntryDetails.DrCr = "D";
-            mappedEntryDetails.FromAccountNumber = entryDetails.FromAccountNumber;
-
-            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-            if (outputHandler.IsErrorOccured)
-            {
-                _logger.LogInformation($"Double entry Failed on C {outputHandler.Message}");
-                return outputHandler;
-            }
-            _logger.LogInformation("Double entry D entered");
-
-            //D 
-            mappedEntryDetails.DrCr = "C";
-            mappedEntryDetails.JournalEntryTransId = 0; //reset tran id for next transaction
-            outputHandler = await _unitOfWork.JournalEntryRepository.Create(mappedEntryDetails);
-            if (outputHandler.IsErrorOccured)
-            {
-                _logger.LogInformation($"Double entry Failed on D {outputHandler.Message}");
-                return outputHandler;
-            }
-
-            _logger.LogInformation("Double entry D entered");
-            _logger.LogInformation($"Journal Entry Transaction Completed Successfully");
-            return new OutputHandler { IsErrorOccured = false, Message = "Transaction Successful" };
-        }
-        public Task<OutputHandler> ShareTransactionSubmissionByMember(JournalEntryDTO journalEntry)
-        {
-            throw new NotImplementedException();
-        }
+        
+       
     }
 }

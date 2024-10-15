@@ -25,9 +25,9 @@ namespace BusinessLogicLayer.Services.LoanAccountServiceContainer
         private IJournalEntryService _journalEntryService;
         private readonly IGroupDetailService _groupSetupService;
         private UnityOfWork _unitOfWork = new UnityOfWork();
+        private IJournalEntryProcessor _journalEntryProcessor;
 
-
-        public LoanAccountService(GenericRepository<AuditTrail> auditService, GenericRepository<LoanAccount> service, GenericRepository<GroupAccount> groupService, ILogger<LoanAccountService> logger, GenericRepository<LoanConfiguration> loanConfigService, IGroupDetailService groupSetupService, IJournalEntryService journalEntryService)
+        public LoanAccountService(GenericRepository<AuditTrail> auditService, GenericRepository<LoanAccount> service, GenericRepository<GroupAccount> groupService, ILogger<LoanAccountService> logger, GenericRepository<LoanConfiguration> loanConfigService, IGroupDetailService groupSetupService, IJournalEntryService journalEntryService, IJournalEntryProcessor journalEntryProcessor)
         {
             _service = service;
             _groupService = groupService;
@@ -36,8 +36,9 @@ namespace BusinessLogicLayer.Services.LoanAccountServiceContainer
             _groupSetupService = groupSetupService;
             _journalEntryService = journalEntryService;
             _auditService = auditService;
+            _journalEntryProcessor = journalEntryProcessor;
         }
-        public async Task<OutputHandler> Create(LoanAccountDTO loanAccount)
+        public async Task<OutputHandler> CreateLoan(LoanAccountDTO loanAccount)
         {
             try
             {
@@ -296,7 +297,7 @@ namespace BusinessLogicLayer.Services.LoanAccountServiceContainer
                 double interestRate = ((double)loanConfig.InterestRate / 100);
                 var interestAmount = loanAccount.RequestedLoanAmount * interestRate;
                 memberAccount.TotalInterestAccumulated += interestAmount;
-                memberAccount.CurrentLoanBalance = loanAccount.ExpectedTotalRepaymentAmount; //current loan balance set to total amount
+                memberAccount.CurrentLoanBalance = 0 - loanAccount.ExpectedTotalRepaymentAmount; //current loan balance set to total amount in negative
                 outputHandler = await _unitOfWork.LoanAccountRepository.Update(loanAccount);
                 if (outputHandler.IsErrorOccured)
                 {
@@ -368,7 +369,7 @@ namespace BusinessLogicLayer.Services.LoanAccountServiceContainer
                 transactionDetails.DateModified = DateTime.Now;
                 transactionDetails.DrCr = "";
                 transactionDetails.RequestedDate = DateTime.UtcNow;
-                var journalEntryOutput = await _journalEntryService.JournalEntryHandler(transactionDetails);
+                var journalEntryOutput = await _journalEntryProcessor.LoanDisburmentEntries(transactionDetails);
                 if (journalEntryOutput.IsErrorOccured)
                 {
                     _logger.LogInformation($"Failed to complete Journal Entry{journalEntryOutput.Message}");

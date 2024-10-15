@@ -35,5 +35,5 @@ public partial class GroupAccountDTO
 
     public int? GroupId { get; set; }
 
-    public virtual GroupGorveningBody Ggb { get; set; } = null!;
+     
 }

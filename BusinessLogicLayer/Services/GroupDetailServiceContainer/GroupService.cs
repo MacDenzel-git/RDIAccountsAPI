@@ -2,6 +2,7 @@
 using AllinOne.DataHandlers.ErrorHandler;
 using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.Services.GroupAccountsServiceContainer;
+using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.Models;
 using DataAccessLayer.UnitOfWork;
 using Microsoft.Extensions.Logging;
@@ -93,7 +94,7 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
                 }
                 //Create Account 
                 //LOG ENTRY CREATE ACCOUNT
-                _logger.LogInformation($"Creating an account for member");
+                _logger.LogInformation($"Creating an account for group");
 
                 _unitOfWork.BeginTransaction();
 
@@ -109,7 +110,7 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
                     GroupAccountNumber = accountNumber,
                     CreatedDate = DateTime.Now,
                     CreatedBy = "LoggedInUser",
-                    Ggbid = 0, //insert Ge=
+                    Ggbid = groupDetail.GGBId, //insert Ge=
                     GroupId = groupDetail.GroupId,
                 };
 
@@ -125,6 +126,31 @@ namespace BusinessLogicLayer.Services.GroupDetailServiceContainer
                 else
                 {
                     _logger.LogInformation($"Main Account Created");
+
+                }
+
+                //CREATE INTEREST ACCOUNT 
+                var interestAccount = new InterestAccount
+                {
+                    InterestAccountNumber = $"INTACC{accountNumber}",
+                    InterestAccountName = $"{groupDetail.GroupName} Interest Account ",
+                    GroupId = groupDetail.GroupId ,
+                    InterestAmountActualCollected = 0 ,
+                    InterestAmountExpected = 0,
+                };
+
+
+                _logger.LogInformation($"Attempting to Create Group Interest Account Record in Interest Account Table");
+                var interestAccountResult = await _unitOfWork.InterestAccountRepository.Create(interestAccount);
+                if (interestAccountResult.IsErrorOccured)
+                {
+                    _logger.LogError($"Exited Group Interest Account Account Creation with an Error {output.Message}");
+
+                    return interestAccountResult;
+                }
+                else
+                {
+                    _logger.LogInformation($"Group Interest Account Created");
 
                 }
 

@@ -26,7 +26,7 @@ namespace RDIAccountsAPI.Controllers
         [HttpPost("Create")]
         public async Task<IActionResult> Create(LoanAccountDTO loanAccount)
         {
-            var outputHandler = await _service.Create(loanAccount);
+            var outputHandler = await _service.CreateLoan(loanAccount);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);

@@ -1,6 +1,7 @@
 ﻿
 
 
+using BusinessLogicLayer;
 using BusinessLogicLayer.AuditTrailServiceContainer;
 using BusinessLogicLayer.GroupDetailsServiceContainer;
 using BusinessLogicLayer.InterestAccountsServiceContainer;
@@ -46,6 +47,7 @@ namespace RDIAccountsAPI
 		{
 			service.AddScoped<IGroupDetailService, GroupDetailService>();
 			service.AddScoped<IAuditTrailService, AuditTrailService>();
+			service.AddScoped<IJournalEntryProcessor, JournalEntryProcessor>();
 			service.AddScoped<ILoanAccountService, LoanAccountService>();
 			service.AddScoped<IMemberAccountService, MemberAccountService>();
 			service.AddScoped<IGroupAccountService, GroupAccountService>();

@@ -25,6 +25,8 @@ public partial class EasyAccountDbContext : DbContext
 
     public virtual DbSet<InterestAccount> InterestAccounts { get; set; }
 
+    public virtual DbSet<InterestAccountJournalEntry> InterestAccountJournalEntries { get; set; }
+
     public virtual DbSet<JournalEntry> JournalEntries { get; set; }
 
     public virtual DbSet<LoanAccount> LoanAccounts { get; set; }
@@ -34,6 +36,8 @@ public partial class EasyAccountDbContext : DbContext
     public virtual DbSet<MailingList> MailingLists { get; set; }
 
     public virtual DbSet<MemberAccount> MemberAccounts { get; set; }
+
+    public virtual DbSet<MemberAccountJournalEntry> MemberAccountJournalEntries { get; set; }
 
     public virtual DbSet<MemberDetail> MemberDetails { get; set; }
 
@@ -100,12 +104,55 @@ public partial class EasyAccountDbContext : DbContext
         {
             entity.HasKey(e => e.InterestAccountId).HasName("PK_InterestAccount");
 
-            entity.Property(e => e.InterestTitle).HasMaxLength(50);
-            entity.Property(e => e.LoanAccountId).HasMaxLength(50);
-            entity.Property(e => e.MemberAccountNumber).HasMaxLength(50);
-            entity.Property(e => e.Rate)
+            entity.Property(e => e.InterestAccountName).HasMaxLength(50);
+            entity.Property(e => e.InterestAccountNumber).HasMaxLength(300);
+        });
+
+        modelBuilder.Entity<InterestAccountJournalEntry>(entity =>
+        {
+            entity.HasNoKey();
+
+            entity.Property(e => e.ApprovedBy).HasMaxLength(50);
+            entity.Property(e => e.ApprovedDate).HasColumnType("datetime");
+            entity.Property(e => e.AssociatedLoanAccountNumber).HasMaxLength(300);
+            entity.Property(e => e.BankTransferTransId).HasMaxLength(50);
+            entity.Property(e => e.ChequeNumber).HasMaxLength(50);
+            entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+            entity.Property(e => e.DateLoanSent).HasColumnType("datetime");
+            entity.Property(e => e.DateModified).HasColumnType("datetime");
+            entity.Property(e => e.DrCr)
                 .HasMaxLength(10)
                 .IsFixedLength();
+            entity.Property(e => e.FromAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.InterestAccountJournalEntryTransId).ValueGeneratedOnAdd();
+            entity.Property(e => e.MemberBankAccount).HasMaxLength(50);
+            entity.Property(e => e.MemberBankName).HasMaxLength(50);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50);
+            entity.Property(e => e.PayMode).HasMaxLength(50);
+            entity.Property(e => e.ProcessDateTime).HasColumnType("datetime");
+            entity.Property(e => e.ProcessedStatus)
+                .HasMaxLength(10)
+                .IsFixedLength();
+            entity.Property(e => e.ReceiptNo).HasMaxLength(50);
+            entity.Property(e => e.RequestMethod).HasMaxLength(50);
+            entity.Property(e => e.RequestedDate).HasColumnType("datetime");
+            entity.Property(e => e.Rev)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Revreq)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.ToAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.TransactionIdentifier).HasMaxLength(50);
+            entity.Property(e => e.TransactionStatus).HasMaxLength(50);
+            entity.Property(e => e.TransactionTypeDescription).HasMaxLength(50);
+
+            entity.HasOne(d => d.TranscationType).WithMany()
+                .HasForeignKey(d => d.TranscationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_InterestAccountJournalEntries_InterestAccountJournalEntries");
         });
 
         modelBuilder.Entity<JournalEntry>(entity =>
@@ -114,6 +161,7 @@ public partial class EasyAccountDbContext : DbContext
 
             entity.Property(e => e.ApprovedBy).HasMaxLength(50);
             entity.Property(e => e.ApprovedDate).HasColumnType("datetime");
+            entity.Property(e => e.AssociatedLoanAccountNumber).HasMaxLength(300);
             entity.Property(e => e.BankTransferTransId).HasMaxLength(50);
             entity.Property(e => e.ChequeNumber).HasMaxLength(50);
             entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
@@ -196,6 +244,53 @@ public partial class EasyAccountDbContext : DbContext
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<MemberAccountJournalEntry>(entity =>
+        {
+            entity.HasNoKey();
+
+            entity.Property(e => e.ApprovedBy).HasMaxLength(50);
+            entity.Property(e => e.ApprovedDate).HasColumnType("datetime");
+            entity.Property(e => e.AssociatedLoanAccountNumber).HasMaxLength(300);
+            entity.Property(e => e.BankTransferTransId).HasMaxLength(50);
+            entity.Property(e => e.ChequeNumber).HasMaxLength(50);
+            entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+            entity.Property(e => e.DateLoanSent).HasColumnType("datetime");
+            entity.Property(e => e.DateModified).HasColumnType("datetime");
+            entity.Property(e => e.DrCr)
+                .HasMaxLength(10)
+                .IsFixedLength();
+            entity.Property(e => e.FromAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.MemberAccountJournalEntryTransId).ValueGeneratedOnAdd();
+            entity.Property(e => e.MemberBankAccount).HasMaxLength(50);
+            entity.Property(e => e.MemberBankName).HasMaxLength(50);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50);
+            entity.Property(e => e.PayMode).HasMaxLength(50);
+            entity.Property(e => e.ProcessDateTime).HasColumnType("datetime");
+            entity.Property(e => e.ProcessedStatus)
+                .HasMaxLength(10)
+                .IsFixedLength();
+            entity.Property(e => e.ReceiptNo).HasMaxLength(50);
+            entity.Property(e => e.RequestMethod).HasMaxLength(50);
+            entity.Property(e => e.RequestedDate).HasColumnType("datetime");
+            entity.Property(e => e.Rev)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Revreq)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.ToAccountNumber).HasMaxLength(50);
+            entity.Property(e => e.TransactionIdentifier).HasMaxLength(50);
+            entity.Property(e => e.TransactionStatus).HasMaxLength(50);
+            entity.Property(e => e.TransactionTypeDescription).HasMaxLength(50);
+
+            entity.HasOne(d => d.TranscationType).WithMany()
+                .HasForeignKey(d => d.TranscationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MemberAccountJournalEntries_MemberAccountJournalEntries");
+        });
+
         modelBuilder.Entity<MemberDetail>(entity =>
         {
             entity.HasKey(e => e.MemberId).HasName("PK_MemberAccounts");
@@ -215,9 +310,9 @@ public partial class EasyAccountDbContext : DbContext
 
         modelBuilder.Entity<TransIdCounter>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("TransIdCounter");
+            entity.ToTable("TransIdCounter");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
         });
 
         modelBuilder.Entity<TransactionType>(entity =>

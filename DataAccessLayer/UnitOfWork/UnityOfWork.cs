@@ -17,6 +17,7 @@ namespace DataAccessLayer.UnitOfWork
         private GenericRepository<MemberAccount> memberAccountRepository;
         private GenericRepository<LoanAccount> loanAccountRepository;
         private GenericRepository<GroupAccount> groupAccountRepository;
+        private GenericRepository<InterestAccount> interestAccountRepository;
         private GenericRepository<JournalEntry> journalEntryRepository;
         private GenericRepository<GroupDetail> groupDetailRepository;
         private GenericRepository<MailingList> mailingListRepository;
@@ -33,7 +34,22 @@ namespace DataAccessLayer.UnitOfWork
                 }
                 return memberRepository;
             }
+
         }
+
+
+        public GenericRepository<InterestAccount> InterestAccountRepository
+        {
+            get
+            {
+                if (this.interestAccountRepository == null)
+                {
+                    this.interestAccountRepository = new GenericRepository<InterestAccount>(context);
+                }
+                return interestAccountRepository;
+            }
+        }
+
 
 
 
